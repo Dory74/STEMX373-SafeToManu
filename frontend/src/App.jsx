@@ -5,6 +5,7 @@ import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
+  const url = "192.168.1.6:8320/"
 
   return (
     <>

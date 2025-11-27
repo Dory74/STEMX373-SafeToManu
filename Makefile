@@ -1,5 +1,5 @@
 build:
-	docker compose up --build backend
+	docker compose up --build backend -d
 	docker compose up --build frontend
 
 down:
