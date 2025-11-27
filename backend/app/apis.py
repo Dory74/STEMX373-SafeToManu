@@ -59,7 +59,7 @@ def processResponse(response, uvValueThreshhold, showToday):
         print("Succesfull response")
     
         data = response.json()
-        today = datetime.today
+        today = datetime.today()
         for item in data["products"][0]["values"]:
             if item['value'] > uvValueThreshhold:
                 dt = datetime.fromisoformat(item["time"].replace("Z", "+00:00"))
@@ -78,4 +78,4 @@ long = "176.17082423934843"
 response = getUVIInfo(lat, long)
 
 processResponse(response, 0, True)
-getUVIInfoChart(lat, long, "clear", "chart.png")
+#getUVIInfoChart(lat, long, "clear", "chart.png")
