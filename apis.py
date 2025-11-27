@@ -39,33 +39,34 @@ def getUVIInfoChart(lat, long, skyType, save_path):
             f.write(response.content)
     return
 
-def formatUVIResponse(entry):
+def formatUVIResponse(dateTime, uvValue):
     """Return a readable string for a single NIWA UV index reading."""
-    dt = datetime.fromisoformat(entry["time"].replace("Z", "+00:00"))
-    utcCorrection = timedelta(hours=13)
-    dt = dt+utcCorrection
 
     # Render a tiny block with date, time and UV value.
     formatted = (
         "-------------\n"
-        f"Date: {dt.strftime('%Y-%m-%d')}\n"
-        f"Time: {dt.strftime('%I:%M %p')}\n"
-        f"Value: {entry['value']}\n"
+        f"Date: {dateTime.strftime('%Y-%m-%d')}\n"
+        f"Time: {dateTime.strftime('%I:%M %p')}\n"
+        f"Value: {uvValue}\n"
         
     )
     return formatted
 
 
-def processResponse(response):
+def processResponse(response, uvValueThreshhold, showToday):
     """Checks the response, if positive prints out a formated result of all the entrys"""
     if response.status_code == 200:
         print("Succesfull response")
     
         data = response.json()
-        
+        today = datetime.today
         for item in data["products"][0]["values"]:
-            if item['value'] != 0:
-                print(formatUVIResponse(item))
+            if item['value'] > uvValueThreshhold:
+                dt = datetime.fromisoformat(item["time"].replace("Z", "+00:00"))
+                utcCorrection = timedelta(hours=13)
+                dt = dt+utcCorrection
+                if (showToday and dt.date() == today.date()) or not showToday:
+                    print(formatUVIResponse(dt, item['value']))
             
     else:
         print(f"Request failied with status code: {response.status_code}")
@@ -76,5 +77,5 @@ lat = "-37.68272674985233"
 long = "176.17082423934843"
 response = getUVIInfo(lat, long)
 
-processResponse(response)
+processResponse(response, 0, True)
 getUVIInfoChart(lat, long, "clear", "chart.png")
