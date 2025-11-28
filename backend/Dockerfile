@@ -11,6 +11,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 
-EXPOSE 8230
+ARG BACKEND_PORT
+ARG API_URL
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8230"]
+ENV PORT=${BACKEND_PORT}
+ENV API_URL=${API_URL}
+
+
+EXPOSE ${PORT}
+
+CMD sh -c "uvicorn app.main:app --host 0.0.0.0 --port $PORT"

@@ -1,13 +1,28 @@
 services:
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      args:
+        API_URL: ${API_URL}
+        PORT: ${BACKEND_PORT}
+    environment:
+        API_URL: ${API_URL}
+        PORT: ${BACKEND_PORT}
+
     container_name: backend
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      args:
+        VITE_API_URL: ${API_URL}
+        PORT: ${FRONTEND_PORT}
+    environment:
+        VITE_API_URL: ${API_URL}
+        PORT: ${FRONTEND_PORT}
     container_name: frontend
     ports:
       - "${FRONTEND_PORT}:80"   

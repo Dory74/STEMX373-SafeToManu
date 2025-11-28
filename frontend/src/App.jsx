@@ -10,6 +10,7 @@ function App() {
   return (
     <>
       <div>
+
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
         </a>
@@ -19,9 +20,15 @@ function App() {
       </div>
       <h1 class="text-3xl font-bold underline">Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <button
+          onClick={() => {
+            setCount((count) => count + 1);
+            console.log(import.meta.env.VITE_API_URL + "hello");
+          }}
+        >
+          {import.meta.env.VITE_API_URL} Hello is {count}
         </button>
+
         <p>
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
