@@ -17,7 +17,8 @@ echo "=== Starting backend (FastAPI + Uvicorn) on port $BACKEND_PORT ==="
 {
   cd "$BACKEND_DIR"
   source "$VENV_DIR/bin/activate" 2>/dev/null || echo "WARNING: Could not activate venv"
-  uvicorn app.main:app --reload --host ${IP_ADDRESS} --port ${BACKEND_PORT} &
+  # Bind to all interfaces so the service is reachable via the LAN IP.
+  uvicorn app.main:app --reload --host 0.0.0.0 --port ${BACKEND_PORT} &
   BACKEND_PID=$!
 }
 
@@ -25,7 +26,8 @@ echo "=== Starting frontend (Vite dev server) on port $FRONTEND_PORT ==="
 {
   cd "$FRONTEND_DIR"
   npm install --silent
-  npm run dev &
+  # Bind to all interfaces; still reachable via ${IP_ADDRESS}:$FRONTEND_PORT
+  npm run dev -- --host=0.0.0.0 --port=${FRONTEND_PORT} &
   FRONTEND_PID=$!
 }
 

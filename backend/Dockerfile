@@ -12,10 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 
 ARG BACKEND_PORT
-ARG API_URL
+# ARG API_URL
 
 ENV PORT=${BACKEND_PORT}
-ENV API_URL=${API_URL}
+# ENV API_URL=${API_URL}
 
 
 EXPOSE ${PORT}

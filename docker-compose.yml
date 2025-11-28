@@ -3,10 +3,10 @@ services:
     build: 
       context: ./backend
       args:
-        API_URL: ${API_URL}
+        # API_URL: ${VITE_API_URL}
         PORT: ${BACKEND_PORT}
     environment:
-        API_URL: ${API_URL}
+        API_URL: ${VITE_API_URL}
         PORT: ${BACKEND_PORT}
 
     container_name: backend
@@ -18,11 +18,12 @@ services:
     build: 
       context: ./frontend
       args:
-        VITE_API_URL: ${API_URL}
+        VITE_API_URL: ${VITE_API_URL}
         PORT: ${FRONTEND_PORT}
     environment:
-        VITE_API_URL: ${API_URL}
-        PORT: ${FRONTEND_PORT}
+      - VITE_API_URL=${VITE_API_URL}
+      - FRONTEND_PORT=${FRONTEND_PORT}
+
     container_name: frontend
     ports:
       - "${FRONTEND_PORT}:80"   
