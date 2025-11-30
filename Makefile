@@ -13,3 +13,6 @@ d:
 
 run:
 	./scripts/run.sh
+
+test-backend:
+	./scripts/test_backend.sh

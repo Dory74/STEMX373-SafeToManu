@@ -3,3 +3,5 @@ dotenv
 datetime
 fastapi
 uvicorn[standard]
+pytest
+httpx

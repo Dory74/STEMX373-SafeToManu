@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
 import './App.css'
 
 function App() {
@@ -8,9 +7,15 @@ function App() {
   const rawServer = import.meta.env.VITE_API_URL || import.meta.env.API_URL
   const SERVER_ADDRESS = rawServer?.startsWith('http') ? rawServer : `http://${rawServer}`
   const [uv, setUV] = useState(null);
+  const lat = "-37.68272674985233"
+  const long = "176.17082423934843"
   
   const requestUV = async () => {
-    const response = await fetch(new URL("/", SERVER_ADDRESS), {
+    const url = new URL("/uv", SERVER_ADDRESS)
+    url.searchParams.set("lat", lat)
+    url.searchParams.set("long", long)
+
+    const response = await fetch(url, {
       method: "GET",
     })
 
@@ -19,42 +24,31 @@ function App() {
     }
 
     const data = await response.json();
-    setUV(data.message ?? data)
-    console.log(data.message)
+    setUV(data.uv ?? data)
+    console.log(uv)
       
   }
   
 
   return (
     <>
-      <div>
-    
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+     <div class="itemOuter">
+      <div class="itemInner">
+        <h1 class="itemTitle">Strand UV</h1>
+        <div class="content">
+          <p>Current UV level at the strand: {uv}</p>
+        </div>
       </div>
-      <h1 class="text-3xl font-bold underline">Vite + React</h1>
-      <div className="card">
-        <button
+     </div>
+
+      <button
           onClick={async () => {
             setCount((count) => count + 1);
             await requestUV();
-            console.log(import.meta.env.VITE_API_URL + "hello");
           }}
         >
-          {import.meta.env.VITE_API_URL} Hello is {count}
+          Update
         </button>
-
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }

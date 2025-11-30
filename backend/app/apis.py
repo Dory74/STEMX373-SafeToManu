@@ -13,7 +13,7 @@ if NIWA_API_KEY is None:
 
 
 
-def getUVIInfo(lat, long):
+def get_uv_info(lat, long):
     """Call the NIWA UV API for a latitude/longitude pair."""
     
     url = "https://api.niwa.co.nz/uv/data"
@@ -25,7 +25,7 @@ def getUVIInfo(lat, long):
     return response
 
 
-def getUVIInfoChart(lat, long, skyType, save_path):
+def get_uv_info_chart(lat, long, skyType, save_path):
     """Call the NIWA UV API for a latitude/longitude pair."""
     
     url = "https://api.niwa.co.nz/uv/chart.png"
@@ -39,43 +39,56 @@ def getUVIInfoChart(lat, long, skyType, save_path):
             f.write(response.content)
     return
 
-def formatUVIResponse(dateTime, uvValue):
-    """Return a readable string for a single NIWA UV index reading."""
+# def formatUVIResponse(dateTime, uvValue):
+#     """Return a readable string for a single NIWA UV index reading."""
 
-    # Render a tiny block with date, time and UV value.
-    formatted = (
-        "-------------\n"
-        f"Date: {dateTime.strftime('%Y-%m-%d')}\n"
-        f"Time: {dateTime.strftime('%I:%M %p')}\n"
-        f"Value: {uvValue}\n"
+#     # Render a tiny block with date, time and UV value.
+#     formatted = (
+#         "-------------\n"
+#         f"Date: {dateTime.strftime('%Y-%m-%d')}\n"
+#         f"Time: {dateTime.strftime('%I:%M %p')}\n"
+#         f"Value: {uvValue}\n"
         
-    )
-    return formatted
+#     )
+#     return formatted
 
 
-def processResponse(response, uvValueThreshhold, showToday):
-    """Checks the response, if positive prints out a formated result of all the entrys"""
-    if response.status_code == 200:
-        print("Succesfull response")
+# def processResponse(response, uvValueThreshhold, showToday, showHour):
+#     """Checks the response, if positive prints out a formated result of all the entrys"""
+#     if response.status_code == 200:
+#         print("Succesfull response")
     
-        data = response.json()
-        today = datetime.today()
-        for item in data["products"][0]["values"]:
-            if item['value'] > uvValueThreshhold:
-                dt = datetime.fromisoformat(item["time"].replace("Z", "+00:00"))
-                utcCorrection = timedelta(hours=13)
-                dt = dt+utcCorrection
-                if (showToday and dt.date() == today.date()) or not showToday:
-                    print(formatUVIResponse(dt, item['value']))
+#         data = response.json()
+#         today = datetime.today()
+#         for item in data["products"][0]["values"]:
+#             if item['value'] > uvValueThreshhold:
+#                 dt = datetime.fromisoformat(item["time"].replace("Z", "+00:00"))
+#                 utcCorrection = timedelta(hours=13)
+#                 dt = dt+utcCorrection
+#                 if (showToday and dt.date() == today.date()) or not showToday:
+#                     print(formatUVIResponse(dt, item['value']))
             
-    else:
-        print(f"Request failied with status code: {response.status_code}")
-        
+#     else:
+#         print(f"Request failied with status code: {response.status_code}")
 
-# Example call for the strand,
-lat = "-37.68272674985233"
-long = "176.17082423934843"
-response = getUVIInfo(lat, long)
+def current_hour_uv(response, utc_offset_hours=13):
+    """Return the UV value for the current hour (after UTC offset), or None if not found."""
+    if response.status_code != 200:
+        return None
 
-processResponse(response, 0, True)
-#getUVIInfoChart(lat, long, "clear", "chart.png")
+    data = response.json()
+    now = datetime.utcnow() + timedelta(hours=utc_offset_hours)
+
+    for item in data.get("products", [{}])[0].get("values", []):
+        dt = datetime.fromisoformat(item["time"].replace("Z", "+00:00"))
+        dt = dt + timedelta(hours=utc_offset_hours)
+        if dt.date() == now.date() and dt.hour == now.hour:
+            return item["value"]
+
+    return None
+
+def get_current_uv(lat, long):
+    """Convenience helper: fetch and return the current-hour UV for a location."""
+    response = get_uv_info(lat, long)
+    return current_hour_uv(response)
+
