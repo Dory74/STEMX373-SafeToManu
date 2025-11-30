@@ -1,55 +1,31 @@
-import { useState } from 'react'
-
-import './App.css'
+import UVReading from './widgets/UVReading'
+import TideHeight from './widgets/TideHeight'
+import TideSpeed from './widgets/TideSpeed'
+import WaterTemp from './widgets/WaterTemp'
+import WaterQuality from './widgets/WaterQuality'
+import Wind from './widgets/Wind'
 
 function App() {
-  const [count, setCount] = useState(0)
-  const rawServer = import.meta.env.VITE_API_URL || import.meta.env.API_URL
-  const SERVER_ADDRESS = rawServer?.startsWith('http') ? rawServer : `http://${rawServer}`
-  const [uv, setUV] = useState(null);
-  const lat = "-37.68272674985233"
-  const long = "176.17082423934843"
-  
-  const requestUV = async () => {
-    const url = new URL("/uv", SERVER_ADDRESS)
-    url.searchParams.set("lat", lat)
-    url.searchParams.set("long", long)
-
-    const response = await fetch(url, {
-      method: "GET",
-    })
-
-    if (!response.ok){
-      throw new Error("Network response was not ok")
-    }
-
-    const data = await response.json();
-    setUV(data.uv ?? data)
-    console.log(uv)
-      
-  }
-  
-
   return (
-    <>
-     <div class="itemOuter">
-      <div class="itemInner">
-        <h1 class="itemTitle">Strand UV</h1>
-        <div class="content">
-          <p>Current UV level at the strand: {uv}</p>
+    <div className="min-h-screen bg-gray-900 text-gray-100">
+      <div className=" mx-auto px-4 py-12">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold tracking-tight">Marine Data Widgets</h1>
+          <p className="mt-2 text-gray-300">
+            Hook these cards up to your endpoints when the APIs are ready.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <UVReading />
+          <TideHeight />
+          <TideSpeed />
+          <WaterTemp />
+          <WaterQuality />
+          <Wind />
         </div>
       </div>
-     </div>
-
-      <button
-          onClick={async () => {
-            setCount((count) => count + 1);
-            await requestUV();
-          }}
-        >
-          Update
-        </button>
-    </>
+    </div>
   )
 }
 
