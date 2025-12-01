@@ -3,12 +3,39 @@ import time
 import datetime
 import os
 import sys
-
-# Config (private, not pushed)
-
-
+import pandas as pd
+import json
 
 
+
+
+
+# Loads leaderboard file (if want to reset at end of the day could add delete at time function.)
+def load_leaderboard():
+    if os.path.exists(LEADERBOARD_FILE):
+        with open(LEADERBOARD_FILE, "r") as f:
+            return json.load(f)
+    return []    
+
+# Saves leaderboard in json.
+def save_leaderboard(lb):
+    with open(LEADERBOARD_FILE, "w") as f:
+        json.dump(lb, f, indent=2)
+
+def update_leaderboard(name, score, video_path):
+    lb = load_leaderboard()
+    lb.append({"name": name, "score": score, "video": video_path})
+    lb.sort(key=lambda x: x["score"], reverse=True)
+    # Keep only top 3 scores.
+    to_delete = lb[TOP_3:]
+    lb = lb[:TOP_3]
+    # Delete videos not in top 3.
+    for entry in to_delete:
+        if os.path.exists(entry["video"]):
+            os.remove(entry["video"])
+    # Saves the returned leaderboard.
+    save_leaderboard(lb)
+    return lb
 
 def run_cmd(cmd):
     print(f"Running: {cmd}")
@@ -27,8 +54,6 @@ def run_cmd(cmd):
     except Exception as e:
         print(f"Command failed: {e}")
         return -1
-
-
 
 def main():
     print("\n=== Starting Auto-Capture Pipeline ===\n")
@@ -78,6 +103,41 @@ def main():
     if run_cmd(analysis_cmd) != 0:
         print("Error during analysis.")
         return
+
+    # Grabs the highest score, needed for leaderboard.
+    scores_csv = os.path.join(os.getcwd(), "scores.csv")
+    if not os.path.exists(scores_csv):
+        print("scores.csv not found. Cannot update leaderboard.")
+        return
+
+    df = pd.read_csv(scores_csv)
+    max_score = df["score"].max()
+    print(f"Max score for this video: {max_score:.1f}")
+
+    # Check if top 3
+    lb = load_leaderboard()
+    if len(lb) < TOP_3 or max_score > lb[-1]["score"]:
+        # Prompt for name to add to the leaderboard, otherwise defaults to anonymous
+        name = input("You are in the top 3! Enter your name: ").strip()
+        if not name:
+            name = "Anonymous"
+        
+        # Rename video with the player's  (easier for API).
+        video_dir = os.path.dirname(local_video)
+        video_name = f"{name}_manu.mp4"
+        new_video_path = os.path.join(video_dir, video_name)
+        os.rename(local_video, new_video_path)
+        
+        # Update leaderboard
+        lb = update_leaderboard(name, max_score, new_video_path)
+        print("Updated leaderboard:")
+        for i, entry in enumerate(lb):
+            print(f"{i+1}: {entry['name']} - {entry['score']:.1f}")
+    else:
+        # Not in the top 3 so the video is deleted to save space, and no leaderboard prompt appears
+        print("Not in top 3, deleting video.")
+        if os.path.exists(local_video):
+            os.remove(local_video)
 
     print("\nFinished")
 
