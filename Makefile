@@ -1,6 +1,7 @@
 build:
 	docker compose up --build backend -d
-	docker compose up --build frontend
+	docker compose up --build frontend -d
+	docker compose up proxy 
 
 down:
 	docker compose down

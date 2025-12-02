@@ -32,7 +32,7 @@ function UVReading() {
     <div className="bg-gray-800 text-gray-100 p-6 rounded-xl shadow-md">
       
       <h2 className="text-xl font-semibold mb-2">UV Reading</h2>
-      <p className="text-gray-300 mb-4">
+      <div className="text-gray-300 mb-4">
         {uv !== undefined && uv !== null ? (
         <p className="text-gray-100 font-semibold mb-4">Current UV Index: {uv}</p>
       ) : (
@@ -40,7 +40,7 @@ function UVReading() {
           No current UV value available—connect to the UV monitoring endpoint to load data.
         </p>
       )}
-      </p>
+      </div>
       <button className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg transition-colors"
 
         onClick={async () => {
