@@ -83,7 +83,7 @@ def current_hour_uv(response, utc_offset_hours=13):
         dt = datetime.fromisoformat(item["time"].replace("Z", "+00:00"))
         dt = dt + timedelta(hours=utc_offset_hours)
         if dt.date() == now.date() and dt.hour == now.hour:
-            return item["value"]
+            return round(item["value"],2)
 
     return None
 

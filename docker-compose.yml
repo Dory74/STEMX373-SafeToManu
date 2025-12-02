@@ -47,7 +47,7 @@ services:
 
   proxy-dev:
     image: nginx:latest
-    container_name: proxy
+    container_name: proxy-dev
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
