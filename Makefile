@@ -13,6 +13,7 @@ d:
 	make down
 
 run:
+	docker compose up proxy-dev -d
 	./scripts/run.sh
 
 test-backend:

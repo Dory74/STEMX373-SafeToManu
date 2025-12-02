@@ -10,7 +10,7 @@ function App() {
     <div className="min-h-screen bg-gray-900 text-gray-100">
       <div className=" mx-auto px-4 py-12">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Marine Data Widgets</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Marine Widgets</h1>
           <p className="mt-2 text-gray-300">
             Hook these cards up to your endpoints when the APIs are ready.
           </p>
