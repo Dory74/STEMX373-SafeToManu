@@ -5,9 +5,10 @@ import os
 import sys
 import pandas as pd
 import json
+from operator import itemgetter
 
 
-
+# Config
 
 
 # Loads leaderboard file (if want to reset at end of the day could add delete at time function.)
@@ -22,9 +23,9 @@ def save_leaderboard(lb):
     with open(LEADERBOARD_FILE, "w") as f:
         json.dump(lb, f, indent=2)
 
-def update_leaderboard(name, score, video_path):
+def update_leaderboard(score, video_path):
     lb = load_leaderboard()
-    lb.append({"name": name, "score": score, "video": video_path})
+    lb.append({"score": score, "video": video_path})
     lb.sort(key=lambda x: x["score"], reverse=True)
     # Keep only top 3 scores.
     to_delete = lb[TOP_3:]
@@ -77,13 +78,12 @@ def main():
 
     time.sleep(1)
 
-    ##Sending video to my computer
+    ##Sending video to my computer.
 
     print("Sending video to computer")
 
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    local_video = os.path.join(WIN_SAVE_DIR, f"splash_{timestamp}.mp4")
-
+    local_video = os.path.join(WIN_SAVE_DIR, f"splash_.mp4")
+    
     scp_cmd = (
         f"scp {PI_USER}@{PI_IP}:{PI_VIDEO_PATH} {local_video}"
     )
@@ -110,34 +110,46 @@ def main():
         print("scores.csv not found. Cannot update leaderboard.")
         return
 
+    # Read scores.
     df = pd.read_csv(scores_csv)
     max_score = df["score"].max()
     print(f"Max score for this video: {max_score:.1f}")
 
-    # Check if top 3
+    # Load leadboard
     lb = load_leaderboard()
-    if len(lb) < TOP_3 or max_score > lb[-1]["score"]:
-        # Prompt for name to add to the leaderboard, otherwise defaults to anonymous
-        name = input("You are in the top 3! Enter your name: ").strip()
-        if not name:
-            name = "Anonymous"
+    # Append and sort scores
+    lb.append({"score": max_score, "video": local_video})
+    lb.sort(key=itemgetter("score"), reverse=True)
+
+    # Keep only top 3.
+    top_3 = lb[:TOP_3]
+    to_delete = lb[TOP_3:]
+
+    # Delete videos not in top 3.
+    for entry in to_delete:
+        if os.path.exists(entry["video"]):
+            os.remove(entry["video"])
+
+    # Rename top 3 videos to leaderboard position.
+    for i, entry in enumerate(top_3, start=1):
+        old_path = entry["video"]
+        new_path = os.path.join(WIN_SAVE_DIR, f"{i}_manu.mp4")
         
-        # Rename video with the player's  (easier for API).
-        video_dir = os.path.dirname(local_video)
-        video_name = f"{name}_manu.mp4"
-        new_video_path = os.path.join(video_dir, video_name)
-        os.rename(local_video, new_video_path)
+        if old_path != new_path and os.path.exists(old_path):
+            if os.path.exists(new_path):
+                os.remove(new_path)
+            os.rename(old_path, new_path)
         
-        # Update leaderboard
-        lb = update_leaderboard(name, max_score, new_video_path)
-        print("Updated leaderboard:")
-        for i, entry in enumerate(lb):
-            print(f"{i+1}: {entry['name']} - {entry['score']:.1f}")
-    else:
-        # Not in the top 3 so the video is deleted to save space, and no leaderboard prompt appears
-        print("Not in top 3, deleting video.")
-        if os.path.exists(local_video):
-            os.remove(local_video)
+        # Update entry path.
+        entry["video"] = new_path
+
+    # Save updated leaderboard.
+    save_leaderboard(top_3)
+
+    # Show updated leaderboard.
+    print("Updated leaderboard:")
+    for i, entry in enumerate(top_3, start=1):
+        print(f"{i}: {entry['score']:.1f}")
 
     print("\nFinished")
 
