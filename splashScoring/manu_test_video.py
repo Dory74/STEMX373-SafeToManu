@@ -40,12 +40,17 @@ def measure_splash(mask):
 
 # Gets the splash measurements for scoring, width is pretty irrelevant
 def manu_score(area, hull_area, height, width,
-               AREA_MAX=150000, HULL_MAX=200000, HEIGHT_MAX=500, MAX_WIDTH=500):
+               AREA_MAX=150000, HULL_MAX=200000, HEIGHT_MAX=400, MAX_WIDTH=400):
     H = min(height / HEIGHT_MAX, 1.0) * 100
     A = min(area / AREA_MAX, 1.0) * 100
     C = min(hull_area / HULL_MAX, 1.0) * 100
     W = min(width / MAX_WIDTH, 1.0) * 100
-    return 0.9 * H + 0.05 * A + 0.03 * C * 0.02 * W
+    score = 0.9 * H + 0.05 * A + 0.03 * C * 0.02 * W
+    
+    if score > 100:
+        score = 100
+        
+    return score
 
 
 
