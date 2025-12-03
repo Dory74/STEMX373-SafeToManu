@@ -45,7 +45,7 @@ def manu_score(area, hull_area, height, width,
     A = min(area / AREA_MAX, 1.0) * 100
     C = min(hull_area / HULL_MAX, 1.0) * 100
     W = min(width / MAX_WIDTH, 1.0) * 100
-    score = 0.9 * H + 0.05 * A + 0.03 * C * 0.02 * W
+    score = 0.9 * H + 0.05 * A + 0.03 * C + 0.02 * W
     
     if score > 100:
         score = 100
@@ -118,7 +118,7 @@ def process_video(video_path, input_box, min_area=100):
 
         # Rudimentary colour filtering for masking - needs work.
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        splash_mask = cv2.inRange(hsv, (0, 0, 150), (180, 50, 255))
+        splash_mask = cv2.inRange(hsv, (0, 0, 135), (180, 80, 255))
 
         # Crop to input box.
         x1, y1, x2, y2 = input_box
@@ -163,10 +163,21 @@ def process_video(video_path, input_box, min_area=100):
             best_frame_idx = idx
 
         # Overlay mask on image frame.
-        mask_color = np.zeros_like(frame)
-        mask_color[:, :, 2] = (combined_mask * 255) 
+        # Overlay mask on image frame.
+        mask_colour = np.zeros_like(frame)
+        mask_colour[:, :, 2] = (combined_mask * 255)
         alpha = 0.5
-        overlayed = cv2.addWeighted(frame, 1.0, mask_color, alpha, 0)
+        overlayed = cv2.addWeighted(frame, 1.0, mask_colour, alpha, 0)
+
+        # --- Add bounding box to overlay ---
+        x1, y1, x2, y2 = input_box
+        cv2.rectangle(
+            overlayed,
+            (x1, y1), (x2, y2),
+            (0, 255, 0),   # green box
+            3              # thickness
+        )
+
 
         # Highlight peak frame.
         if idx == best_frame_idx:
@@ -202,9 +213,18 @@ def process_video(video_path, input_box, min_area=100):
 
     # Save best frame overlay → results folder
     if best_frame_img is not None and best_frame_mask is not None:
-        mask_color = np.zeros_like(best_frame_img)
-        mask_color[:, :, 2] = (best_frame_mask * 255)
-        overlayed_best = cv2.addWeighted(best_frame_img, 1.0, mask_color, alpha, 0)
+        mask_colour = np.zeros_like(best_frame_img)
+        mask_colour[:, :, 2] = (best_frame_mask * 255)
+        overlayed_best = cv2.addWeighted(best_frame_img, 1.0, mask_colour, alpha, 0)
+
+        # Add bounding box
+        x1, y1, x2, y2 = input_box
+        cv2.rectangle(
+            overlayed_best,
+            (x1, y1), (x2, y2),
+            (0, 255, 0),
+            3
+        )
 
         cv2.imwrite(os.path.join(RESULTS_DIR, "best_splash_frame_with_mask.png"), overlayed_best)
         cv2.imwrite(os.path.join(RESULTS_DIR, "best_splash_frame.png"), best_frame_img)
@@ -228,6 +248,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Fixed box - this will need to be adjusted later when we have a set angle.
-    INPUT_BOX = np.array([429, 463, 916, 966])
+    INPUT_BOX = np.array([430, 450, 700, 1250])
 
     process_video(args.video, INPUT_BOX)
