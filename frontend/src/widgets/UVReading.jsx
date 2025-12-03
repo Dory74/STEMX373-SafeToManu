@@ -1,11 +1,6 @@
 import { useState } from "react"
 
-const rawServer = import.meta.env.VITE_API_URL || import.meta.env.API_URL
-const SERVER_ADDRESS = rawServer?.startsWith("http")
-  ? rawServer
-  : rawServer
-    ? `https://${rawServer}`
-    : "https://manu.byteme.pro/api"
+const SERVER_ADDRESS = import.meta.env.VITE_API_URL || import.meta.env.API_URL
 
 const lat = "-37.68272674985233"
 const long = "176.17082423934843"

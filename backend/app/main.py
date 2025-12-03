@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from . import apis as api
+import json
 import os
 from dotenv import load_dotenv
 
@@ -42,6 +44,7 @@ app.add_middleware(
 def root():
     return {"message": "Backend is running"}
 
+
 @app.get("/api/uv")
 def get_uv(lat: float, long: float):
     """Return the current-hour UV index for the provided lat/long query parameters."""
@@ -51,3 +54,21 @@ def get_uv(lat: float, long: float):
         raise HTTPException(status_code=502, detail="Could not fetch UV value")
     api.get_uv_info_chart(lat, long, "clear", "chart.png")
     return {"lat": lat, "long": long, "uv": uv_value}
+
+
+LEADERBOARD_FILE = os.path.join(os.path.dirname(__file__), "leaderboard.json")
+
+
+@app.get("/api/leaderboard")
+def get_leaderboard():
+    if not os.path.exists(LEADERBOARD_FILE):
+        raise HTTPException(status_code=404, detail="Leaderboard file not found")
+
+    with open(LEADERBOARD_FILE, "r") as f:
+        lb = json.load(f)
+
+    # Convert full file paths to just filenames for frontend use
+    for entry in lb:
+        entry["video"] = os.path.basename(entry["video"])
+
+    return JSONResponse(content=lb)
