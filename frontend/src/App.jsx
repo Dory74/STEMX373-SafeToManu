@@ -15,7 +15,7 @@ function App() {
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight">Manu Widgets</h1>
           <p className="mt-2 text-gray-300">
-            Planning document to test funcitonality of all widgets
+            Planning document to test funcitonality of all widgets <br></br><strong>This is not the final desing</strong>
           </p>
         </div>
 

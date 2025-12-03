@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 const SERVER_ADDRESS = import.meta.env.VITE_API_URL
 
@@ -7,6 +7,11 @@ function Leaderboard() {
   const [entries, setEntries] = useState([])
   const [status, setStatus] = useState("idle")
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    fetchLeaderboard(); // Call the function when the component mounts
+  }, []); 
+
 
   const fetchLeaderboard = async () => {
     setStatus("loading")
