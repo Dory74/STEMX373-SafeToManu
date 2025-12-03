@@ -1,13 +1,18 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from . import apis as api
+from fastapi.responses import FileResponse
+
 import json
 import os
 from dotenv import load_dotenv
 
+from . import uvApi
+from . import regionalCouncilApi as regional
+from . import manuSplashApi as splash
 
 app = FastAPI()
+latest_video_name = ''
 
 load_dotenv()
 # VITE_FRONTEND_URL = os.getenv("VITE_FRONTEND_URL")
@@ -48,11 +53,11 @@ def root():
 @app.get("/api/uv")
 def get_uv(lat: float, long: float):
     """Return the current-hour UV index for the provided lat/long query parameters."""
-    response = api.get_uv_info(str(lat), str(long))
-    uv_value = api.current_hour_uv(response)
+    response = uvApi.get_uv_info(str(lat), str(long))
+    uv_value = uvApi.current_hour_uv(response)
     if uv_value is None:
         raise HTTPException(status_code=502, detail="Could not fetch UV value")
-    api.get_uv_info_chart(lat, long, "clear", "chart.png")
+    uvApi.get_uv_info_chart(lat, long, "clear", "chart.png")
     return {"lat": lat, "long": long, "uv": uv_value}
 
 
@@ -72,3 +77,13 @@ def get_leaderboard():
         entry["video"] = os.path.basename(entry["video"])
 
     return JSONResponse(content=lb)
+
+
+VIDEO_FILE = os.path.join(os.path.dirname(__file__), "latest.mp4")
+@app.get("/api/latestVideo")
+def get_latest_video():
+    # ping jacks server for latest video, if its diffrent, then get it nad return it,else return nothing
+    if not os.path.exists(VIDEO_FILE):
+        raise HTTPException(status_code=404, detail="Leaderboard file not found")
+    
+    return FileResponse(VIDEO_FILE)
