@@ -20,7 +20,7 @@ SCORES_CSV = os.path.join(RESULTS_DIR, "scores.csv")
 LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")
 TOP_3 = 3
 
-# Misc
+# Running console commands.
 def run_cmd(cmd):
     """Run a shell command and print outputs."""
     print(f"Running: {cmd}")
@@ -110,9 +110,9 @@ def record_video():
         f'-y -f v4l2 -framerate 60 -video_size 1280x720 '
         f'-i /dev/video0 -t 5 '
         f'-vf "eq=brightness=0.05:contrast=1.3:saturation=1.2" '
-        f'-c:v libx264 -pix_fmt yuv420p -crf 18 -preset slow '
+        f'-c:v libx264 -pix_fmt yuv420p -crf 18 -preset fast '
         f'{PI_VIDEO_PATH}'
-)
+    )
 
     return run_cmd(ffmpeg_cmd)
 
