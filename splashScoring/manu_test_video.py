@@ -1,15 +1,15 @@
 import sys, os
-
-
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(PROJECT_ROOT, "samfiles"))
-os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
-
 import numpy as np
 import argparse
 import cv2
-from PIL import Image
 import torch
+import numpy as np
+import pandas as pd
+
+# For using sam imports.
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(PROJECT_ROOT, "samfiles"))
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 # Create results folder
 RESULTS_DIR = "results"
@@ -18,47 +18,50 @@ os.makedirs(RESULTS_DIR, exist_ok=True)
 # Measuring the splash, important for scoring.
 def measure_splash(mask):
     mask_uint8 = (mask.astype(np.uint8)) * 255
+    # Number of pixels = area.
     area = int(mask.sum())
 
+    # Coordinates of each pixel.
     ys, xs = np.where(mask)
+    # Gets the height and width of the mask.
     height = int(ys.max() - ys.min()) if len(ys) else 0
     width  = int(xs.max() - xs.min()) if len(xs) else 0
-
+    # Gets Mask contours.
     contours, _ = cv2.findContours(mask_uint8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
+    # Merge into one mask if theres more than 1 contour.
     if len(contours) > 1:
         merged = np.vstack([c.reshape(-1, 2) for c in contours])
         hull = cv2.convexHull(merged)
         hull_area = int(cv2.contourArea(hull))
+    # If there is 1 countour this is correct, get the hull area.
     elif len(contours) == 1:
         hull = cv2.convexHull(contours[0])
         hull_area = int(cv2.contourArea(hull))
+    # Can't find hull, area is 0
     else:
         hull_area = 0
-
+    # Return values
     return area, hull_area, height, width
 
 
-# Gets the splash measurements for scoring, width is pretty irrelevant
-def manu_score(area, hull_area, height, width,
-               AREA_MAX=150000, HULL_MAX=200000, HEIGHT_MAX=400, MAX_WIDTH=400):
+# Gets the splash measurements for scoring, width is pretty irrelevant, could be removed.
+def manu_score(area, hull_area, height, width, AREA_MAX=75000, HULL_MAX=150000, HEIGHT_MAX=800):
     H = min(height / HEIGHT_MAX, 1.0) * 100
     A = min(area / AREA_MAX, 1.0) * 100
     C = min(hull_area / HULL_MAX, 1.0) * 100
-    W = min(width / MAX_WIDTH, 1.0) * 100
-    score = 0.9 * H + 0.05 * A + 0.03 * C + 0.02 * W
-    
+    # Abstract scoring, will be adjusted later.
+    score = 0.6 * H + 0.35 * A + 0.05 * C
+    # Score must not exceed 100, as it is the max end of the scale.
     if score > 100:
         score = 100
-        
     return score
-
-
 
 # Using META's segment anything imports
 from sam2.build_sam import build_sam2
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 
+# Sam setup.
 def load_sam(device):
     sam2_checkpoint = "samfiles/checkpoints/sam2.1_hiera_large.pt"
     model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
@@ -66,18 +69,15 @@ def load_sam(device):
     return model
 
 
-# Processing the input video.
+# Processing the input video, if area is less than 100 pixels the score being processed will automatically be set to 0.
 def process_video(video_path, input_box, min_area=100):
-
-    import cv2
-    import numpy as np
-    import pandas as pd
-
+    # Get video.
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print("Error: cannot open video")
         return
 
+    # Get video information.
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -95,7 +95,7 @@ def process_video(video_path, input_box, min_area=100):
     model = load_sam(device)
     predictor = SAM2ImagePredictor(model)
 
-    # Video writer → results folder
+    # Writes finished video into results.
     output_video_path = os.path.join(RESULTS_DIR, "splash_overlay.mp4")
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out_vid = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
@@ -106,8 +106,10 @@ def process_video(video_path, input_box, min_area=100):
     best_frame_idx = -1
     scores_csv = []
 
+    # Console debugging
     print("Processing video...")
 
+    # For every frame in the video loop.
     for idx in range(frame_count):
         ret, frame = cap.read()
         if not ret:
@@ -117,7 +119,7 @@ def process_video(video_path, input_box, min_area=100):
         if idx % 2 == 1:
             continue
 
-        # Rudimentary colour filtering for masking - needs work.
+        # Rudimentary colour filtering for masking - needs work, somewhat works with videos found online from the wharf..
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         splash_mask = cv2.inRange(hsv, (0, 0, 135), (180, 80, 255))
 
@@ -145,6 +147,7 @@ def process_video(video_path, input_box, min_area=100):
             multimask_output=False
         )
 
+        # Combining masks for refinement (both from the SAM mask, and the mask generated from detecting bright areas.)
         if len(masks) > 0:
             sam_mask = masks[0]
             combined_mask = np.logical_and(splash_mask, sam_mask)
@@ -156,7 +159,7 @@ def process_video(video_path, input_box, min_area=100):
         splash_score = 0 if area < min_area else manu_score(area, hull_area, height_mask, width_mask)
         scores_csv.append([idx, splash_score, area, hull_area, height_mask, width_mask])
 
-        # Track peak splash.
+        # Track highest scoring splash.
         if splash_score > best_score:
             best_score = splash_score
             best_frame_img = frame.copy()
@@ -164,21 +167,19 @@ def process_video(video_path, input_box, min_area=100):
             best_frame_idx = idx
 
         # Overlay mask on image frame.
-        # Overlay mask on image frame.
         mask_colour = np.zeros_like(frame)
         mask_colour[:, :, 2] = (combined_mask * 255)
         alpha = 0.5
         overlayed = cv2.addWeighted(frame, 1.0, mask_colour, alpha, 0)
 
-        # --- Add bounding box to overlay ---
+        # Bounding box overlay.
         x1, y1, x2, y2 = input_box
         cv2.rectangle(
             overlayed,
             (x1, y1), (x2, y2),
-            (0, 255, 0),   # green box
-            3              # thickness
+            (0, 255, 0),   #
+            3            
         )
-
 
         # Highlight peak frame.
         if idx == best_frame_idx:
@@ -203,16 +204,18 @@ def process_video(video_path, input_box, min_area=100):
             2,
             cv2.LINE_AA
         )
-
+        # Write to the terminal
         out_vid.write(overlayed)
-        print(f"Frame {idx}: score={splash_score:.1f}, height={height_mask}")
+        print(f"Frame {idx}: score={splash_score:.1f}, height={height_mask} pixels, area={area} pixels")
 
+    #Close video to save resources.
     cap.release()
     out_vid.release()
 
-    print("\nBest frame =", best_frame_idx, "score =", best_score)
+    # Write the best frame and score to the console.
+    print(f"\nBest frame = {best_frame_idx} score = {best_score:.2f}")
 
-    # Save best frame overlay → results folder
+    # Save best frame overlay.
     if best_frame_img is not None and best_frame_mask is not None:
         mask_colour = np.zeros_like(best_frame_img)
         mask_colour[:, :, 2] = (best_frame_mask * 255)
@@ -226,29 +229,25 @@ def process_video(video_path, input_box, min_area=100):
             (0, 255, 0),
             3
         )
-
+        # Save the best frame, with and without the mask.
         cv2.imwrite(os.path.join(RESULTS_DIR, "best_splash_frame_with_mask.png"), overlayed_best)
         cv2.imwrite(os.path.join(RESULTS_DIR, "best_splash_frame.png"), best_frame_img)
 
-    # Save CSV → results folder
+    # Save CSV in results folder
     df = pd.DataFrame(scores_csv, columns=["frame", "score", "area", "hull_area", "height", "width"])
     df.to_csv(os.path.join(RESULTS_DIR, "scores.csv"), index=False)
 
+    # Results and where they're stored
     print("\nSaved in results/:")
     print("  splash_overlay.mp4")
     print("  best_splash_frame.png")
     print("  best_splash_frame_with_mask.png")
     print("  scores.csv")
 
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--video", type=str, required=True,
-                        help="Path to a 5-second video clip")
+    parser.add_argument("--video", type=str, required=True, help="Path to a 5-second video clip")
     args = parser.parse_args()
-
     # Fixed box - this will need to be adjusted later when we have a set angle.
     INPUT_BOX = np.array([430, 450, 700, 1250])
-
     process_video(args.video, INPUT_BOX)
