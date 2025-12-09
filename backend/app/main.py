@@ -57,12 +57,26 @@ def get_uv(lat: float, long: float):
     uv_value = uvApi.current_hour_uv(response)
     if uv_value is None:
         raise HTTPException(status_code=502, detail="Could not fetch UV value")
-    uvApi.get_uv_info_chart(lat, long, "clear", "chart.png")
+    # uvApi.get_uv_info_chart(lat, long, "clear", "chart.png")
+    
     return {"lat": lat, "long": long, "uv": uv_value}
 
 
-LEADERBOARD_FILE = os.path.join(os.path.dirname(__file__), "leaderboard.json")
+@app.get("/api/tideHeight")
+def get_current_tide_height():
+    height = regional.get_tide_height()
+    return {"height": height}
 
+@app.get("/api/waterTemp")
+def get_current_tide_height():
+    temp = regional.get_water_temprature()
+    return {"temp": temp}
+
+
+
+
+
+LEADERBOARD_FILE = os.path.join(os.path.dirname(__file__), "leaderboard.json")
 
 @app.get("/api/leaderboard")
 def get_leaderboard():

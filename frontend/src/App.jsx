@@ -10,7 +10,7 @@ import InstantReplay from './widgets/InstantReplay'
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
+    <div className="min-h-screen w-full bg-gray-900 text-gray-100">
       <div className=" mx-auto px-4 py-12">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold tracking-tight">Manu Widgets</h1>
