@@ -39,6 +39,43 @@ def get_uv_info_chart(lat, long, skyType, save_path):
             f.write(response.content)
     return
 
+
+
+def current_hour_uv(response, utc_offset_hours=13):
+    """Return the UV value for the current hour (after UTC offset), or None if not found."""
+    if response.status_code != 200:
+        return None
+
+    data = response.json()
+    now = datetime.utcnow() + timedelta(hours=utc_offset_hours)
+
+    for item in data.get("products", [{}])[0].get("values", []):
+        dt = datetime.fromisoformat(item["time"].replace("Z", "+00:00"))
+        dt = dt + timedelta(hours=utc_offset_hours)
+        if dt.date() == now.date() and dt.hour == now.hour:
+            return round(item["value"],2)
+
+    return None
+
+def get_current_uv(lat, long):
+    """Convenience helper: fetch and return the current-hour UV for a location."""
+    response = get_uv_info(lat, long)
+    return current_hour_uv(response)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # def formatUVIResponse(dateTime, uvValue):
 #     """Return a readable string for a single NIWA UV index reading."""
 
@@ -70,25 +107,3 @@ def get_uv_info_chart(lat, long, skyType, save_path):
             
 #     else:
 #         print(f"Request failied with status code: {response.status_code}")
-
-def current_hour_uv(response, utc_offset_hours=13):
-    """Return the UV value for the current hour (after UTC offset), or None if not found."""
-    if response.status_code != 200:
-        return None
-
-    data = response.json()
-    now = datetime.utcnow() + timedelta(hours=utc_offset_hours)
-
-    for item in data.get("products", [{}])[0].get("values", []):
-        dt = datetime.fromisoformat(item["time"].replace("Z", "+00:00"))
-        dt = dt + timedelta(hours=utc_offset_hours)
-        if dt.date() == now.date() and dt.hour == now.hour:
-            return round(item["value"],2)
-
-    return None
-
-def get_current_uv(lat, long):
-    """Convenience helper: fetch and return the current-hour UV for a location."""
-    response = get_uv_info(lat, long)
-    return current_hour_uv(response)
-
