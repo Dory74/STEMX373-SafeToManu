@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react"
 
-const SERVER_ADDRESS = import.meta.env.VITE_API_URL || import.meta.env.API_URL
+const SERVER_ADDRESS = import.meta.env.VITE_API_URL 
 
-const lat = "-37.68272674985233"
-const long = "176.17082423934843"
+const lat = import.meta.env.VITE_LAT
+const long = import.meta.env.VITE_LON
 
 function UVReading() {
 

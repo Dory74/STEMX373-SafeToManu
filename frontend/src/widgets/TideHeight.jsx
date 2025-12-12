@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 
-const SERVER_ADDRESS = import.meta.env.VITE_API_URL || import.meta.env.API_URL
+const SERVER_ADDRESS = import.meta.env.VITE_API_URL 
 
 function TideHeight() {
 

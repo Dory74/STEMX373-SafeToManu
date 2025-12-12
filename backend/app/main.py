@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from . import uvApi
 from . import regionalCouncilApi as regional
 from . import manuSplashApi as splash
+from . import metServiceApi as met
 
 app = FastAPI()
 latest_video_name = ''
@@ -71,6 +72,13 @@ def get_current_tide_height():
 def get_current_tide_height():
     temp = regional.get_water_temprature()
     return {"temp": temp}
+
+@app.get("/api/windSpeed")
+def get_current_wind_speed(lat, lon):
+    speed = met.get_wind_10m(lat, lon)
+    return {"speed": speed}
+
+
 
 
 
