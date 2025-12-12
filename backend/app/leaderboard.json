@@ -1,0 +1,14 @@
+[
+    {
+        "score": 23.333,
+        "video": "path\\to\\video"
+    },
+    {
+        "score": 52.333,
+        "video":"path\\to\\video"
+    },
+    {
+        "score": 26.333,
+        "video":"path\\to\\video"
+    }
+]

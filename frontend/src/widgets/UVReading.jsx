@@ -1,18 +1,38 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
-const rawServer = import.meta.env.VITE_API_URL || import.meta.env.API_URL
-const SERVER_ADDRESS = rawServer?.startsWith("http")
-  ? rawServer
-  : rawServer
-    ? `https://${rawServer}`
-    : "https://manu.byteme.pro/api"
+const SERVER_ADDRESS = import.meta.env.VITE_API_URL 
 
-const lat = "-37.68272674985233"
-const long = "176.17082423934843"
+const lat = import.meta.env.VITE_LAT
+const long = import.meta.env.VITE_LON
 
 function UVReading() {
 
   const [uv, setUV] = useState(null);
+
+
+  useEffect(() => {
+    requestUV(); // Call the function when the component mounts
+  }, []);
+
+  const getUvColor = (value) => {
+    const uvValue = parseFloat(value)
+    if (Number.isNaN(uvValue)) {
+      return "gray"
+    }
+    if (uvValue > 10) {
+      return "purple"
+    }
+    if (uvValue >= 7){
+      return "red"
+    }
+    if (uvValue >= 5){
+      return "orange"
+    }
+    if (uvValue >= 2){
+      return "yellow"
+    }
+    return "green"
+  }
 
   const requestUV = async () => {
     const url = new URL("/api/uv", SERVER_ADDRESS)
@@ -41,16 +61,16 @@ function UVReading() {
 
   return (
     <div className="bg-gray-800 text-gray-100 p-6 rounded-xl shadow-md">
-      
+
       <h2 className="text-xl font-semibold mb-2">UV Reading</h2>
       <div className="text-gray-300 mb-4">
         {uv !== undefined && uv !== null ? (
-        <p className="text-gray-100 font-semibold mb-4">Current UV Index: {uv}</p>
-      ) : (
-        <p className="text-gray-300 mb-4">
-          No current UV value available—connect to the UV monitoring endpoint to load data.
-        </p>
-      )}
+          <p className="text-gray-100 font-semibold mb-4" style={{color: getUvColor(uv)}}>Current UV Index: {uv}</p>
+        ) : (
+          <p className="text-gray-300 mb-4">
+            No current UV value available—connect to the UV monitoring endpoint to load data.
+          </p>
+        )}
       </div>
       <button className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg transition-colors"
         onClick={async () => {
