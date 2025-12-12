@@ -135,7 +135,7 @@ def show_masks(image, masks, scores, point_coords=None, box_coords=None, input_l
 
 
 
-image = Image.open("best_splash_frame.png")
+image = Image.open("z.png")
 image = np.array(image.convert("RGB"))
 
 from sam2.build_sam import build_sam2
@@ -151,7 +151,8 @@ predictor.set_image(image)
 # Manu 1 input box
 # input_box = np.array([320, 90, 500, 380])
 
-input_box = np.array([692, 358, 916, 966])
+#input_box = np.array([692, 358, 916, 966])
+input_box = np.array([150, 410, 457, 732])
 
 masks, scores, _ = predictor.predict(
     point_coords=None,
