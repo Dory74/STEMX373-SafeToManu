@@ -9,9 +9,14 @@ BASE_URL = "http://sos.boprc.govt.nz/service?service=SOS&version=2.0.0&request=G
 TIDE_HEIGHT_PATH = "Tide%20Height.ChartDatum@EP569596&observedProperty=Tide%20Height"
 WATER_TEMP_PATH = "Water%20Temp.Primary@EP020617&observedProperty=Water%20Temp"
 # E_COLI_PATH = "E%20coli.LabResult@EP020617&observedProperty=E%20coli"
-# ENTEROCOCCI_PATH = "Ent.LabResult@EP020617&observedProperty=Enterococci"
+ENTEROCOCCI_PATH = "Ent.Rec@EP095164&observedProperty=Enterococci"
 # FAECAL_COLIFORMS_PATH = "FC.LabResult@EP020617&observedProperty=Faecal%20coliforms"
 
+ALERT_LEVEL_THRESHOLDS = {
+    "1": 140, #Less than 140 safe to swim
+    "2": 280 # between 140 and 280 be alert
+              #Greater than 280- public warning status 
+}
 
 
 def request_from_url(url):
@@ -54,22 +59,24 @@ def get_water_temprature():
     return request_from_url(url)
 
 
-# def get_e_coli():
-#     """Get the latest E. coli lab result."""
-#     url = generate_url(E_COLI_PATH)
-#     return request_from_url(url)
+def get_enterococci():
+    """Get the latest Enterococci lab result."""
+    url = generate_url(ENTEROCOCCI_PATH)
+    enterococci_value = request_from_url(url) # Entercoli level
+    threshold_1 = ALERT_LEVEL_THRESHOLDS["1"] # 140
+    threshold_2 = ALERT_LEVEL_THRESHOLDS["2"] # 280
 
+    # Level 1: Safe to swim
+    if enterococci_value < threshold_1:
+        return 1
 
-# def get_enterococci():
-#     """Get the latest Enterococci lab result."""
-#     url = generate_url(ENTEROCOCCI_PATH)
-#     return request_from_url(url)
+    # Level 3: Public warning 
+    elif enterococci_value > threshold_2:
+        return 3
 
-
-# def get_faecal_coliforms():
-#     """Get the latest faecal coliforms lab result."""
-#     url = generate_url(FAECAL_COLIFORMS_PATH)
-#     return request_from_url(url)
+    # Level 2: Be alert 
+    else: 
+        return 2
 
 
 # def debug_urls():

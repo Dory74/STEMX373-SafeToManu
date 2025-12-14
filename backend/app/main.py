@@ -73,6 +73,14 @@ def get_current_tide_height():
     temp = regional.get_water_temprature()
     return {"temp": temp}
 
+@app.get("/api/enterococci")
+def get_current_tide_height():
+    saftey_threshhold = regional.get_enterococci()
+    return {"safteyLevel": saftey_threshhold}
+
+
+
+
 @app.get("/api/windSpeed")
 def get_current_wind_speed(lat, lon):
     speed = met.get_wind_10m(lat, lon)
