@@ -2,9 +2,6 @@ import { useState, useEffect } from "react"
 
 const SERVER_ADDRESS = import.meta.env.VITE_API_URL 
 
-const lat = import.meta.env.VITE_LAT
-const long = import.meta.env.VITE_LON
-
 function UVReading() {
 
   const [uv, setUV] = useState(null);
@@ -36,8 +33,7 @@ function UVReading() {
 
   const requestUV = async () => {
     const url = new URL("/api/uv", SERVER_ADDRESS)
-    url.searchParams.set("lat", lat)
-    url.searchParams.set("long", long)
+    
 
     const response = await fetch(url, {
       method: "GET",

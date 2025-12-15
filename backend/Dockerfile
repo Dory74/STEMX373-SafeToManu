@@ -12,8 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 
 ARG BACKEND_PORT
+ARG METSERVICE_API_KEY
 
 ENV PORT=${BACKEND_PORT}
+ENV METSERVICE_API_KEY = ${METSERVICE_API_KEY}
 
 EXPOSE ${PORT}
 

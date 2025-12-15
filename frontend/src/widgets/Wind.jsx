@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react"
 
 const SERVER_ADDRESS = import.meta.env.VITE_API_URL 
-const lat = import.meta.env.VITE_LAT
-const lon = import.meta.env.VITE_LON
+
 
 function WindSpeed() {
 
@@ -15,8 +14,7 @@ function WindSpeed() {
 
   const requestWindSpeed = async () => {
     const url = new URL("/api/windSpeed", SERVER_ADDRESS)
-    url.searchParams.set("lat", lat)
-    url.searchParams.set("lon", lon)
+    
 
     const response = await fetch(url, {
       method: "GET",
