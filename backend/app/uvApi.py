@@ -13,7 +13,7 @@ if NIWA_API_KEY is None:
 
 
 
-def get_uv_info(lat, long):
+def __get_uv_info(lat, long):
     """Call the NIWA UV API for a latitude/longitude pair."""
     
     url = "https://api.niwa.co.nz/uv/data"
@@ -25,7 +25,7 @@ def get_uv_info(lat, long):
     return response
 
 
-def get_uv_info_chart(lat, long, skyType, save_path):
+def __get_uv_info_chart(lat, long, skyType, save_path):
     """Call the NIWA UV API for a latitude/longitude pair."""
     
     url = "https://api.niwa.co.nz/uv/chart.png"
@@ -41,7 +41,7 @@ def get_uv_info_chart(lat, long, skyType, save_path):
 
 
 
-def current_hour_uv(response, utc_offset_hours=13):
+def __current_hour_uv(response, utc_offset_hours=13):
     """Return the UV value for the current hour (after UTC offset), or None if not found."""
     if response.status_code != 200:
         return None
@@ -59,8 +59,8 @@ def current_hour_uv(response, utc_offset_hours=13):
 
 def get_current_uv(lat, long):
     """Convenience helper: fetch and return the current-hour UV for a location."""
-    response = get_uv_info(lat, long)
-    return current_hour_uv(response)
+    response = __get_uv_info(lat, long)
+    return __current_hour_uv(response)
 
 
 
