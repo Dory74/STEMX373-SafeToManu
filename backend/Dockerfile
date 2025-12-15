@@ -5,18 +5,17 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install dependencies first (Docker caching!)
+# Install dependencies first 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 
 ARG BACKEND_PORT
-# ARG API_URL
+ARG METSERVICE_API_KEY
 
 ENV PORT=${BACKEND_PORT}
-# ENV API_URL=${API_URL}
-
+ENV METSERVICE_API_KEY = ${METSERVICE_API_KEY}
 
 EXPOSE ${PORT}
 
