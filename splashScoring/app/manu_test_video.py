@@ -7,12 +7,12 @@ import numpy as np
 import pandas as pd
 
 # For using sam imports.
-PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = "../"
 sys.path.append(os.path.join(PROJECT_ROOT, "samfiles"))
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 
 # Create results folder
-RESULTS_DIR = "results"
+RESULTS_DIR = "../results"
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
 
@@ -68,7 +68,7 @@ from sam2.sam2_image_predictor import SAM2ImagePredictor
 
 # SAM setup.
 def load_sam(device):
-    sam2_checkpoint = "samfiles/checkpoints/sam2.1_hiera_large.pt"
+    sam2_checkpoint = "../samfiles/checkpoints/sam2.1_hiera_large.pt"
     model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
     model = build_sam2(model_cfg, sam2_checkpoint, device=device)
     return model
