@@ -66,8 +66,10 @@ function InstantReplay() {
         <video
           key={videoUrl}
           src={videoUrl}
+          controls
           autoPlay
           className="w-full rounded-lg bg-black"
+          
         />
       ) : (
         <p className="text-gray-300">

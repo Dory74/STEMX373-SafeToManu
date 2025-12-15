@@ -70,9 +70,11 @@ services:
     image: nginx:latest
     container_name: proxy-dev
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx-dev.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "5080:5080"   # only nginx is exposed
       - "5443:5443"
     restart: unless-stopped
+    
+
 
