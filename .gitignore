@@ -1,0 +1,5 @@
+.env
+venv/
+chart.png
+.vscode
+curl_output.html

@@ -1,0 +1,80 @@
+services:
+  backend:
+    build: 
+      context: ./backend
+      args:
+        # API_URL: ${VITE_API_URL}
+        PORT: ${BACKEND_PORT}
+        NIWA_API_KEY: ${NIWA_API_KEY}
+        METSERVICE_API_KEY: ${METSERVICE_API_KEY}
+    environment:
+        API_URL: ${VITE_API_URL}
+        PORT: ${BACKEND_PORT}
+        NIWA_API_KEY: ${NIWA_API_KEY}
+        METSERVICE_API_KEY: ${METSERVICE_API_KEY}
+    env_file:
+      - ./.env
+
+    container_name: backend
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    restart: unless-stopped
+
+  # splash_scoring:
+  #   build:
+  #     context: ./splashScoring
+  #     args:
+  #       PORT: ${SPLASH_SCORING_PORT}
+  #   environment:
+  #     PORT: ${SPLASH_SCORING_PORT}
+  #   env_file:
+  #     - ./.env
+  #   container_name: splash_scoring
+  #   ports:
+  #     - "${SPLASH_SCORING_PORT}:${SPLASH_SCORING_PORT}"
+  #   restart: unless-stopped
+
+
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+        PORT: ${FRONTEND_PORT}
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+      - FRONTEND_PORT=${FRONTEND_PORT}
+
+    container_name: frontend
+    ports:
+      - "${FRONTEND_PORT}:80"   
+    restart: unless-stopped
+
+  proxy:
+    image: nginx:latest
+    container_name: proxy
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "5080:5080"   # only nginx is exposed
+      - "5443:5443"
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
+  proxy-dev:
+    image: nginx:latest
+    container_name: proxy-dev
+    volumes:
+      - ./nginx-dev.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "5080:5080"   # only nginx is exposed
+      - "5443:5443"
+    restart: unless-stopped
+    
+
+
