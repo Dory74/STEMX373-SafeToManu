@@ -82,9 +82,7 @@ def debug_urls():
     url_map = {
         "get_tide_height": generate_url(TIDE_HEIGHT_PATH),
         "get_water_temprature": generate_url(WATER_TEMP_PATH),
-        "get_e_coli": generate_url(E_COLI_PATH),
-        "get_enterococci": generate_url(ENTEROCOCCI_PATH),
-        "get_faecal_coliforms": generate_url(FAECAL_COLIFORMS_PATH),
+        "get_enterococci": generate_url(ENTEROCOCCI_PATH)
     }
     
     return url_map
