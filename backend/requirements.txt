@@ -5,5 +5,3 @@ fastapi
 uvicorn[standard]
 pytest
 httpx
-json
-flask
