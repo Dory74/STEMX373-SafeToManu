@@ -1,5 +1,5 @@
 /samfiles/
-scores.csv
-images/*
-videos/*
-results/*
+/images/*
+/videos/*
+/results/*
+/testResources/

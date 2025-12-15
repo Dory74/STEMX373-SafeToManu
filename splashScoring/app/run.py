@@ -14,9 +14,9 @@ PI_IP = "10.191.8.5"
 PI_VIDEO_PATH = "/home/ju30/splash.mp4"
 
 # Filepaths.
-WIN_SAVE_DIR = r"C:\Users\Jack\sam2\splashScoring\videos"
-RESULTS_DIR = os.path.join(os.getcwd(), "results")
-PROCESS_SCRIPT = r"C:\Users\Jack\sam2\splashScoring\manu_test_video.py"
+WIN_SAVE_DIR = r"..\videos"
+RESULTS_DIR = r"..\results"
+PROCESS_SCRIPT = "manu_test_video.py"
 SCORES_CSV = os.path.join(RESULTS_DIR, "scores.csv")
 LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")
 # Variable.
@@ -49,7 +49,6 @@ def safe_rename(src, dst, max_attempts=10):
         attempt_path = dst if i == 0 else f"{base}_{i}{ext}"
         if not os.path.exists(attempt_path):
             os.rename(src, attempt_path)
-            print(f"Renamed: {src} → {attempt_path}")
             return attempt_path
 
     raise RuntimeError(f"Could not rename {src} → {dst}")
