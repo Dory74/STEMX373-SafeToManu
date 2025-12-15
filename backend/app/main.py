@@ -56,8 +56,7 @@ def root():
 @app.get("/api/uv")
 def get_uv():
     """Return the current-hour UV index for the provided lat/long query parameters."""
-    response = uvApi.get_uv_info(str(LAT), str(LON))
-    uv_value = uvApi.current_hour_uv(response)
+    uv_value = uvApi.get_current_uv(str(LAT), str(LON))
     if uv_value is None:
         raise HTTPException(status_code=502, detail="Could not fetch UV value")
     # uvApi.get_uv_info_chart(lat, long, "clear", "chart.png")

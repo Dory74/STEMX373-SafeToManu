@@ -15,6 +15,7 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 RESULTS_DIR = "results"
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
+
 # Measuring the splash, important for scoring.
 def measure_splash(mask):
     mask_uint8 = (mask.astype(np.uint8)) * 255
@@ -25,7 +26,7 @@ def measure_splash(mask):
     ys, xs = np.where(mask)
     # Gets the height and width of the mask.
     height = int(ys.max() - ys.min()) if len(ys) else 0
-    width  = int(xs.max() - xs.min()) if len(xs) else 0
+    width = int(xs.max() - xs.min()) if len(xs) else 0
     # Gets Mask contours.
     contours, _ = cv2.findContours(mask_uint8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
@@ -46,7 +47,9 @@ def measure_splash(mask):
 
 
 # Gets the splash measurements for scoring, width is pretty irrelevant, could be removed.
-def manu_score(area, hull_area, height, width, AREA_MAX=75000, HULL_MAX=150000, HEIGHT_MAX=800):
+def manu_score(
+    area, hull_area, height, width, AREA_MAX=75000, HULL_MAX=150000, HEIGHT_MAX=800
+):
     H = min(height / HEIGHT_MAX, 1.0) * 100
     A = min(area / AREA_MAX, 1.0) * 100
     C = min(hull_area / HULL_MAX, 1.0) * 100
@@ -57,11 +60,13 @@ def manu_score(area, hull_area, height, width, AREA_MAX=75000, HULL_MAX=150000, 
         score = 100
     return score
 
+
 # Using META's segment anything imports
 from sam2.build_sam import build_sam2
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 
-# Sam setup.
+
+# SAM setup.
 def load_sam(device):
     sam2_checkpoint = "samfiles/checkpoints/sam2.1_hiera_large.pt"
     model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
@@ -69,7 +74,7 @@ def load_sam(device):
     return model
 
 
-# Processing the input video, if area is less than 100 pixels the score being processed will automatically be set to 0.
+# Video processing.
 def process_video(video_path, input_box, min_area=100):
     # Get video.
     cap = cv2.VideoCapture(video_path)
@@ -77,7 +82,7 @@ def process_video(video_path, input_box, min_area=100):
         print("Error: cannot open video")
         return
 
-    # Get video information.
+    # Video info
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = cap.get(cv2.CAP_PROP_FPS)
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -95,9 +100,9 @@ def process_video(video_path, input_box, min_area=100):
     model = load_sam(device)
     predictor = SAM2ImagePredictor(model)
 
-    # Writes finished video into results.
+    # Output video writer
     output_video_path = os.path.join(RESULTS_DIR, "splash_overlay.mp4")
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out_vid = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
 
     best_score = -1
@@ -106,36 +111,71 @@ def process_video(video_path, input_box, min_area=100):
     best_frame_idx = -1
     scores_csv = []
 
-    # Console debugging
-    print("Processing video...")
+    print("Processing video (First Pass)")
 
-    # For every frame in the video loop.
+    # First pass: Quick skipping with basic masks... find peak frame.
+    first_pass = 3
+    approx_peak_score = -1
+    approx_peak_idx = -1
+
+    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
     for idx in range(frame_count):
         ret, frame = cap.read()
         if not ret:
             break
-
-        # Skip every 2nd frame for speed.
-        if idx % 2 == 1:
+        if idx % first_pass != 0:
             continue
 
-        # Rudimentary colour filtering for masking - needs work, somewhat works with videos found online from the wharf..
+        # Simple masking using colours. Needs adjusting depending on environment.
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         splash_mask = cv2.inRange(hsv, (0, 0, 135), (180, 80, 255))
-
-        # Crop to input box.
+        crop_mask = np.zeros_like(splash_mask)
         x1, y1, x2, y2 = input_box
+        crop_mask[y1:y2, x1:x2] = splash_mask[y1:y2, x1:x2]
+        splash_mask = crop_mask // 255
+
+        area, hull_area, height_mask, width_mask = measure_splash(splash_mask)
+        splash_score = (
+            0
+            if area < min_area
+            else manu_score(area, hull_area, height_mask, width_mask)
+        )
+
+        if splash_score > approx_peak_score:
+            approx_peak_score = splash_score
+            approx_peak_idx = idx
+
+    print(
+        f"First pass peak at frame {approx_peak_idx} (score :{approx_peak_score:.1f})"
+    )
+
+    # Second pass: 5 either side of peak frame.
+    refine_range = 5
+    start_idx = max(0, approx_peak_idx - refine_range)
+    end_idx = min(frame_count, approx_peak_idx + refine_range + 1)
+
+    cap.set(cv2.CAP_PROP_POS_FRAMES, start_idx)
+    for idx in range(start_idx, end_idx):
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Simple masking using colours. Needs adjusting depending on environment.
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        splash_mask = cv2.inRange(hsv, (0, 0, 135), (180, 80, 255))
         crop_mask = np.zeros_like(splash_mask)
         crop_mask[y1:y2, x1:x2] = splash_mask[y1:y2, x1:x2]
         splash_mask = crop_mask
 
         # Remove small blobs.
-        contours, _ = cv2.findContours(splash_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(
+            splash_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
         clean_mask = np.zeros_like(splash_mask)
         for c in contours:
             if cv2.contourArea(c) >= min_area:
                 cv2.drawContours(clean_mask, [c], -1, 255, -1)
-        splash_mask = clean_mask // 255 
+        splash_mask = clean_mask // 255
 
         # SAM refinement.
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -144,44 +184,38 @@ def process_video(video_path, input_box, min_area=100):
             point_coords=None,
             point_labels=None,
             box=input_box[None, :],
-            multimask_output=False
+            multimask_output=False,
         )
-
         # Combining masks for refinement (both from the SAM mask, and the mask generated from detecting bright areas.)
         if len(masks) > 0:
             sam_mask = masks[0]
             combined_mask = np.logical_and(splash_mask, sam_mask)
+        # If SAM didn't work.
         else:
             combined_mask = splash_mask
-
-        # Measure splash.
+        # Get values.
         area, hull_area, height_mask, width_mask = measure_splash(combined_mask)
-        splash_score = 0 if area < min_area else manu_score(area, hull_area, height_mask, width_mask)
+        # Get score.
+        splash_score = (
+            0
+            if area < min_area
+            else manu_score(area, hull_area, height_mask, width_mask)
+        )
         scores_csv.append([idx, splash_score, area, hull_area, height_mask, width_mask])
 
-        # Track highest scoring splash.
+        # Track best frame
         if splash_score > best_score:
             best_score = splash_score
             best_frame_img = frame.copy()
             best_frame_mask = combined_mask.copy()
             best_frame_idx = idx
 
-        # Overlay mask on image frame.
+        # Save video overlay.
         mask_colour = np.zeros_like(frame)
-        mask_colour[:, :, 2] = (combined_mask * 255)
+        mask_colour[:, :, 2] = combined_mask * 255
         alpha = 0.5
         overlayed = cv2.addWeighted(frame, 1.0, mask_colour, alpha, 0)
-
-        # Bounding box overlay.
-        x1, y1, x2, y2 = input_box
-        cv2.rectangle(
-            overlayed,
-            (x1, y1), (x2, y2),
-            (0, 255, 0),   #
-            3            
-        )
-
-        # Highlight peak frame.
+        cv2.rectangle(overlayed, (x1, y1), (x2, y2), (0, 255, 0), 3)
         if idx == best_frame_idx:
             cv2.putText(
                 overlayed,
@@ -190,10 +224,8 @@ def process_video(video_path, input_box, min_area=100):
                 cv2.FONT_HERSHEY_SIMPLEX,
                 1.5,
                 (0, 255, 255),
-                3
+                3,
             )
-
-        # Add height text.
         cv2.putText(
             overlayed,
             f"Frame {idx}: Height {height_mask}px, Score {splash_score:.1f}",
@@ -202,53 +234,47 @@ def process_video(video_path, input_box, min_area=100):
             1,
             (255, 255, 255),
             2,
-            cv2.LINE_AA
+            cv2.LINE_AA,
         )
-        # Write to the terminal
         out_vid.write(overlayed)
-        print(f"Frame {idx}: score={splash_score:.1f}, height={height_mask} pixels, area={area} pixels")
+        print(
+            f"Frame {idx}: score={splash_score:.1f}, height={height_mask} pixels, area={area} pixels"
+        )
 
-    #Close video to save resources.
+    # Close for resources.
     cap.release()
     out_vid.release()
 
-    # Write the best frame and score to the console.
-    print(f"\nBest frame = {best_frame_idx} score = {best_score:.2f}")
-
-    # Save best frame overlay.
+    # Save best frame.
     if best_frame_img is not None and best_frame_mask is not None:
         mask_colour = np.zeros_like(best_frame_img)
-        mask_colour[:, :, 2] = (best_frame_mask * 255)
+        mask_colour[:, :, 2] = best_frame_mask * 255
         overlayed_best = cv2.addWeighted(best_frame_img, 1.0, mask_colour, alpha, 0)
-
-        # Add bounding box
-        x1, y1, x2, y2 = input_box
-        cv2.rectangle(
-            overlayed_best,
-            (x1, y1), (x2, y2),
-            (0, 255, 0),
-            3
+        cv2.rectangle(overlayed_best, (x1, y1), (x2, y2), (0, 255, 0), 3)
+        cv2.imwrite(
+            os.path.join(RESULTS_DIR, "best_splash_frame_with_mask.png"), overlayed_best
         )
-        # Save the best frame, with and without the mask.
-        cv2.imwrite(os.path.join(RESULTS_DIR, "best_splash_frame_with_mask.png"), overlayed_best)
         cv2.imwrite(os.path.join(RESULTS_DIR, "best_splash_frame.png"), best_frame_img)
 
-    # Save CSV in results folder
-    df = pd.DataFrame(scores_csv, columns=["frame", "score", "area", "hull_area", "height", "width"])
+    # Save CSV.
+    df = pd.DataFrame(
+        scores_csv, columns=["frame", "score", "area", "hull_area", "height", "width"]
+    )
     df.to_csv(os.path.join(RESULTS_DIR, "scores.csv"), index=False)
 
-    # Results and where they're stored
-    print("\nSaved in results/:")
+    print(f"\nBest frame = {best_frame_idx} score = {best_score:.2f}")
+    print(f"\nSaved in results/:")
     print("  splash_overlay.mp4")
     print("  best_splash_frame.png")
     print("  best_splash_frame_with_mask.png")
     print("  scores.csv")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--video", type=str, required=True, help="Path to a 5-second video clip")
+    parser.add_argument("--video", type=str, required=True)
     args = parser.parse_args()
     # Fixed box - this will need to be adjusted later when we have a set angle.
     INPUT_BOX = np.array([430, 450, 700, 1250])
-    #INPUT_BOX = np.array([130, 450, 700, 1250])
+    # INPUT_BOX = np.array([130, 450, 700, 1250])
     process_video(args.video, INPUT_BOX)
