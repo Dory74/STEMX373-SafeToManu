@@ -5,10 +5,12 @@ import os
 import json
 import pandas as pd
 from operator import itemgetter
+import time
 
 # Config.
 PI_USER = "ju30"
 PI_IP = "10.191.8.5"
+#PI_IP = "10.144.99.133"
 PI_VIDEO_PATH = "/home/ju30/splash.mp4"
 
 # Filepaths.
@@ -102,10 +104,14 @@ def record_video():
     ffmpeg_cmd = (
         f"ssh {PI_USER}@{PI_IP} "
         f'ffmpeg -hide_banner -loglevel error '
-        f'-y -f v4l2 -framerate 30 -video_size 1280x720 '
+        f'-y -f v4l2 '
+        f'-input_format mjpeg '
+        f'-video_size 1280x720 '
         f'-i /dev/video0 -t 5 '
-        f'-vf "eq=brightness=0.05:contrast=1.3:saturation=1.2" '
-        f'-c:v libx264 -pix_fmt yuv420p -crf 18 -preset fast '
+        f'-vf "eq=brightness=0.05:contrast=1.3:saturation=1.2,fps=30" '
+        f'-vsync cfr '
+        f'-c:v libx264 -pix_fmt yuv420p '
+        f'-crf 18 -preset veryfast '
         f'{PI_VIDEO_PATH}'
     )
 
@@ -192,6 +198,9 @@ def update_leaderboard(score, video_path):
         print(f"{i}: Score={e['score']:.1f}, Video={os.path.basename(e['video'])}")
 
 def main():
+    
+    start_time = time.time()
+    
     # Writes to the console to show the program is starting.
     print("\nStarting\n")
 
@@ -214,6 +223,10 @@ def main():
     update_leaderboard(score, local_video)
     normalize_filenames()
     print("\nFinished.")
+    end_time = time.time()
+    elapsed = end_time - start_time
+    minutes, seconds = divmod(elapsed, 60)
+    print(f"\nFinished. Total runtime: {int(minutes)} min {seconds:.0f} sec")
 
 if __name__ == "__main__":
     main()
