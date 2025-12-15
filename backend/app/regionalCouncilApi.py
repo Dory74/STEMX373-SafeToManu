@@ -80,9 +80,9 @@ def get_enterococci():
 def __debug_urls():
     """Print and return the fully qualified URLs used by the data fetchers."""
     url_map = {
-        "get_tide_height": generate_url(TIDE_HEIGHT_PATH),
-        "get_water_temprature": generate_url(WATER_TEMP_PATH),
-        "get_enterococci": generate_url(ENTEROCOCCI_PATH)
+        "get_tide_height": __generate_url(TIDE_HEIGHT_PATH),
+        "get_water_temprature": __generate_url(WATER_TEMP_PATH),
+        "get_enterococci": __generate_url(ENTEROCOCCI_PATH)
     }
     
     return url_map
