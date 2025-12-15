@@ -8,9 +8,7 @@ import json
 BASE_URL = "http://sos.boprc.govt.nz/service?service=SOS&version=2.0.0&request=GetObservation&offering="
 TIDE_HEIGHT_PATH = "Tide%20Height.ChartDatum@EP569596&observedProperty=Tide%20Height"
 WATER_TEMP_PATH = "Water%20Temp.Primary@EP020617&observedProperty=Water%20Temp"
-# E_COLI_PATH = "E%20coli.LabResult@EP020617&observedProperty=E%20coli"
 ENTEROCOCCI_PATH = "Ent.Rec@EP095164&observedProperty=Enterococci"
-# FAECAL_COLIFORMS_PATH = "FC.LabResult@EP020617&observedProperty=Faecal%20coliforms"
 
 ALERT_LEVEL_THRESHOLDS = {
     "1": 140, #Less than 140 safe to swim
@@ -36,7 +34,7 @@ def generate_url(url):
     now = datetime.utcnow()  # current UTC time (API expects UTC)
     today_date = now.strftime("%Y-%m-%d")  # formatted yyyy-mm-dd
 
-    # Limit results to the last 24 hours up to the current day.
+    # Limit results to the last 2 months up to the current day.
     url = (
         BASE_URL
         + url
@@ -79,17 +77,17 @@ def get_enterococci():
         return 2
 
 
-# def debug_urls():
-#     """Print and return the fully qualified URLs used by the data fetchers."""
-#     url_map = {
-#         "get_tide_height": generate_url(TIDE_HEIGHT_PATH),
-#         "get_water_temprature": generate_url(WATER_TEMP_PATH),
-#         "get_e_coli": generate_url(E_COLI_PATH),
-#         "get_enterococci": generate_url(ENTEROCOCCI_PATH),
-#         "get_faecal_coliforms": generate_url(FAECAL_COLIFORMS_PATH),
-#     }
+def debug_urls():
+    """Print and return the fully qualified URLs used by the data fetchers."""
+    url_map = {
+        "get_tide_height": generate_url(TIDE_HEIGHT_PATH),
+        "get_water_temprature": generate_url(WATER_TEMP_PATH),
+        "get_e_coli": generate_url(E_COLI_PATH),
+        "get_enterococci": generate_url(ENTEROCOCCI_PATH),
+        "get_faecal_coliforms": generate_url(FAECAL_COLIFORMS_PATH),
+    }
     
-#     return url_map
+    return url_map
 
 # print(get_tide_height())
 # print(get_water_temprature())
