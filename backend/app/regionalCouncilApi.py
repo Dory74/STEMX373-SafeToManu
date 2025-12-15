@@ -17,7 +17,7 @@ ALERT_LEVEL_THRESHOLDS = {
 }
 
 
-def request_from_url(url):
+def __request_from_url(url):
     """Call the given SOS endpoint and return the latest observation value."""
     
     response = requests.get(url)
@@ -30,7 +30,7 @@ def request_from_url(url):
     return latest_value
 
 
-def generate_url(url):
+def __generate_url(url):
     now = datetime.utcnow()  # current UTC time (API expects UTC)
     today_date = now.strftime("%Y-%m-%d")  # formatted yyyy-mm-dd
 
@@ -47,20 +47,20 @@ def generate_url(url):
 
 def get_tide_height():
     """Get the latest tide height from the regional council SOS service."""
-    url = generate_url(TIDE_HEIGHT_PATH)
-    return request_from_url(url)
+    url = __generate_url(TIDE_HEIGHT_PATH)
+    return __request_from_url(url)
 
 
 def get_water_temprature():
     """Get the latest water temperature from the regional council SOS service."""
-    url = generate_url(WATER_TEMP_PATH)
-    return request_from_url(url)
+    url = __generate_url(WATER_TEMP_PATH)
+    return __request_from_url(url)
 
 
 def get_enterococci():
     """Get the latest Enterococci lab result."""
-    url = generate_url(ENTEROCOCCI_PATH)
-    enterococci_value = request_from_url(url) # Entercoli level
+    url = __generate_url(ENTEROCOCCI_PATH)
+    enterococci_value = __request_from_url(url) # Entercoli level
     threshold_1 = ALERT_LEVEL_THRESHOLDS["1"] # 140
     threshold_2 = ALERT_LEVEL_THRESHOLDS["2"] # 280
 
@@ -77,14 +77,14 @@ def get_enterococci():
         return 2
 
 
-def debug_urls():
+def __debug_urls():
     """Print and return the fully qualified URLs used by the data fetchers."""
     url_map = {
-        "get_tide_height": generate_url(TIDE_HEIGHT_PATH),
-        "get_water_temprature": generate_url(WATER_TEMP_PATH),
-        "get_e_coli": generate_url(E_COLI_PATH),
-        "get_enterococci": generate_url(ENTEROCOCCI_PATH),
-        "get_faecal_coliforms": generate_url(FAECAL_COLIFORMS_PATH),
+        "get_tide_height": __generate_url(TIDE_HEIGHT_PATH),
+        "get_water_temprature": __generate_url(WATER_TEMP_PATH),
+        "get_e_coli": __generate_url(E_COLI_PATH),
+        "get_enterococci": __generate_url(ENTEROCOCCI_PATH),
+        "get_faecal_coliforms": __generate_url(FAECAL_COLIFORMS_PATH),
     }
     
     return url_map
@@ -95,4 +95,4 @@ def debug_urls():
 # print(get_enterococci())
 # print(get_faecal_coliforms())
 
-# print(json.dumps(debug_urls(), indent=4))
+# print(json.dumps(__debug_urls(), indent=4))

@@ -82,7 +82,7 @@ def get_current_tide_height():
 
 
 @app.get("/api/windSpeed")
-def get_current_wind_speed(lat, lon):
+def get_current_wind_speed(lat: float, lon: float):
     speed = met.get_wind_10m(lat, lon)
     return {"speed": speed}
 
