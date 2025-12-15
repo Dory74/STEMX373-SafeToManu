@@ -66,7 +66,7 @@ from sam2.build_sam import build_sam2
 from sam2.sam2_image_predictor import SAM2ImagePredictor
 
 
-# Sam setup.
+# SAM setup.
 def load_sam(device):
     sam2_checkpoint = "samfiles/checkpoints/sam2.1_hiera_large.pt"
     model_cfg = "configs/sam2.1/sam2.1_hiera_l.yaml"
@@ -74,12 +74,8 @@ def load_sam(device):
     return model
 
 
-import time
-
-
+# Video processing.
 def process_video(video_path, input_box, min_area=100):
-    start_time = time.time()  # Start timer
-
     # Get video.
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
@@ -149,7 +145,9 @@ def process_video(video_path, input_box, min_area=100):
             approx_peak_score = splash_score
             approx_peak_idx = idx
 
-    print(f"First pass peak at frame {approx_peak_idx} (score :{approx_peak_score:.1f})")
+    print(
+        f"First pass peak at frame {approx_peak_idx} (score :{approx_peak_score:.1f})"
+    )
 
     # Second pass: 5 either side of peak frame.
     refine_range = 5
@@ -274,9 +272,7 @@ def process_video(video_path, input_box, min_area=100):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--video", type=str, required=True, help="Path to a 5-second video clip"
-    )
+    parser.add_argument("--video", type=str, required=True)
     args = parser.parse_args()
     # Fixed box - this will need to be adjusted later when we have a set angle.
     INPUT_BOX = np.array([430, 450, 700, 1250])
