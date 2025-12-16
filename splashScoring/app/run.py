@@ -16,7 +16,7 @@ PI_VIDEO_PATH = "/home/ju30/splash.mp4"
 # Filepaths.
 WIN_SAVE_DIR = r"..\videos"
 RESULTS_DIR = r"..\results"
-PROCESS_SCRIPT = "manu_test_video.py"
+PROCESS_SCRIPT = "manumeter.py"
 SCORES_CSV = os.path.join(RESULTS_DIR, "scores.csv")
 LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")
 # Variable.
@@ -131,7 +131,7 @@ def download_video():
     return None
 
 
-# Run manu_test_video script.
+# Run script.
 def analyze_video(local_video):
     print("Running algorithm...")
     # Runs the SAM2 video algorithm script.
