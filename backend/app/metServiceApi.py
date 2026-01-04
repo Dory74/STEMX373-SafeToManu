@@ -56,18 +56,13 @@ def __request_wind_10m(lat: str, lon: str):
 def get_wind_10m(lat, lon):
     
     print(f"Lat: {lat}, Lon: {lon}")
-    print(f"Lat: {LAT}, Lon: {LON}")
-
+    
     data = __request_wind_10m(lat, lon)
     speed_ms = data['variables']['wind.speed.at-10m']['data'][0]
     speed_knots = speed_ms * 1.94384
+    
     return round(speed_knots, 2)
 
-
-# data = get_wind_10m(
-#     lat=LAT,
-#     lon=LON
-# )
 
 # print(json.dumps(data, indent=4))
 #print(data['variables']['wind.speed.at-10m']['data'][0])
