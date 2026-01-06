@@ -1,5 +1,7 @@
-import UVReading from './widgets/UVReading'
-
+import StatusGood from './pageSegments/StatusGood.jsx'
+import SplashMeter from './pageSegments/SplashMeter.jsx'
+import DataWidgets from './pageSegments/DataWidgets.jsx'
+import LegalAndLogos from './pageSegments/LegalAndLogos.jsx'
 
 
 
@@ -8,22 +10,22 @@ function App() {
     <div className="flex flex-col h-screen">
       {/* Segment 1 */}
       <div className="h-[15%] bg-red-500">
-        Segment 1 (15%)
+        {<StatusGood />}
       </div>
 
       {/* Segment 2 */}
       <div className="h-[40%] bg-blue-500">
-        Segment 2 (40%)
+        {<SplashMeter />}
       </div>
 
       {/* Segment 3 */}
       <div className="h-[30%] bg-green-500">
-        Segment 3 (30%)
+        {<DataWidgets />}
       </div>
 
       {/* Segment 4 */}
       <div className="h-[15%] bg-yellow-500">
-        Segment 4 (15%)
+        {<LegalAndLogos />}
       </div>
     </div>
   )
