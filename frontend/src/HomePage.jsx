@@ -5,18 +5,25 @@ import UVReading from './widgets/UVReading'
 
 function App() {
   return (
-    <div className="min-h-screen w-full bg-gray-900 text-gray-100">
-      <div className=" mx-auto px-4 py-12">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight">Manu Widgets</h1>
-          <p className="mt-2 text-gray-300">
-            Planning document to test funcitonality of all widgets <br></br><strong>This is not the final desing</strong>
-          </p>
-        </div>
+    <div className="flex flex-col h-screen">
+      {/* Segment 1 */}
+      <div className="h-[15%] bg-red-500">
+        Segment 1 (15%)
+      </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <UVReading></UVReading>
-        </div>
+      {/* Segment 2 */}
+      <div className="h-[40%] bg-blue-500">
+        Segment 2 (40%)
+      </div>
+
+      {/* Segment 3 */}
+      <div className="h-[30%] bg-green-500">
+        Segment 3 (30%)
+      </div>
+
+      {/* Segment 4 */}
+      <div className="h-[15%] bg-yellow-500">
+        Segment 4 (15%)
       </div>
     </div>
   )
