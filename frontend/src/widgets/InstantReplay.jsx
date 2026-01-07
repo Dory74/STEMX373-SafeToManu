@@ -41,13 +41,10 @@ function InstantReplay() {
   }
 
   return (
-    <div className="bg-gray-800 text-gray-100 p-6 rounded-xl shadow-md">
-      <div className="flex items-start justify-between gap-3 mb-3">
+    <div className="bg-gray-800 text-gray-100 p-4 rounded-xl shadow-md">
+      <div className="flex items-start justify-between gap-3 mb-2">
         <div>
           <h2 className="text-xl font-semibold">Instant Replay</h2>
-          <p className="text-gray-300 text-sm">
-            Fetch and watch the most recent manu clip.
-          </p>
         </div>
         <button
           className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-700/50 text-white font-medium px-3 py-2 rounded-lg transition-colors text-sm"

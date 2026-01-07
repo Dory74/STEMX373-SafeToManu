@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse
 import json
 import os
 from dotenv import load_dotenv
+import math
 
 from . import uvApi
 from . import regionalCouncilApi as regional
@@ -106,6 +107,11 @@ def get_leaderboard():
     # Convert full file paths to just filenames for frontend use
     for entry in lb:
         entry["video"] = os.path.basename(entry["video"])
+
+    # Convert full score into 2dp
+    for entry in lb:
+        entry["score"] = round(float(entry["score"]), 0)
+
 
     return JSONResponse(content=lb)
 
