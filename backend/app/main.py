@@ -6,7 +6,6 @@ from fastapi.responses import FileResponse
 import json
 import os
 from dotenv import load_dotenv
-import math
 
 from . import uvApi
 from . import regionalCouncilApi as regional
@@ -18,8 +17,6 @@ latest_video_name = ''
 LAT="-37.68272674985233"
 LON="176.17082423934843"
 load_dotenv()
-# VITE_FRONTEND_URL = os.getenv("VITE_FRONTEND_URL")
-# VITE_API_URL = os.getenv("VITE_API_URL")
 
 
 origins = [
@@ -54,9 +51,14 @@ def root():
     return {"message": "Backend is running"}
 
 
+
+# NIWA UV API endpoints
 @app.get("/api/uv")
 def get_uv():
-    """Return the current-hour UV index for the provided lat/long query parameters."""
+    """Return the current-hour UV index for the provided Tauranga coordinates.\
+    Returns:
+        dict: {"lat": float, "long": float, "uv": float} UV index data
+    """
     uv_value = uvApi.get_current_uv(str(LAT), str(LON))
     if uv_value is None:
         raise HTTPException(status_code=502, detail="Could not fetch UV value")
@@ -65,62 +67,69 @@ def get_uv():
     return {"lat": LAT, "long": LON, "uv": uv_value}
 
 
+#BOP Regional Council API endpoints
 @app.get("/api/tideHeight")
 def get_current_tide_height():
+    """Return the current tide height in metres.
+    
+    Returns:
+        dict: {"height": float} Tide height in metres
+    """
     height = regional.get_tide_height()
     return {"height": height}
 
 @app.get("/api/waterTemp")
 def get_current_tide_height():
+    """Returns water temprature in degress celcius
+
+    Returns:
+        dict: {"temp": float} Water temprature in °C
+    """
     temp = regional.get_water_temprature()
     return {"temp": temp}
 
 @app.get("/api/enterococci")
-def get_current_tide_height():
+def get_enterococci():
+    """Return the current enterococci saftey level.
+
+    Returns:
+        string: "1" = Safe to swim
+                "2" = Be alert
+                "3" = Public warning
+    """
     saftey_threshhold = regional.get_enterococci()
     return {"safteyLevel": saftey_threshhold}
 
 
 
-
+# MetService API endpoints
 @app.get("/api/windSpeed")
 def get_current_wind_speed():
+    """Return the current wind speed at in knots.
+    Returns:
+        dict: {"speed": float} Wind speed in m/s
+
+    """
     speed = met.get_wind_10m(LAT, LON)
     return {"speed": speed}
 
 
 
-
-
-
-
-LEADERBOARD_FILE = os.path.join(os.path.dirname(__file__), "leaderboard.json")
-
+# Manu Splash API endpoints
 @app.get("/api/leaderboard")
 def get_leaderboard():
-    if not os.path.exists(LEADERBOARD_FILE):
-        raise HTTPException(status_code=404, detail="Leaderboard file not found")
+    """Returns current top 3 manu scores 
 
-    with open(LEADERBOARD_FILE, "r") as f:
-        lb = json.load(f)
+    Returns:
+        JSONResponse: Leaderboard data, see manuSplashApi.get_leaderboard() for format
+    """
+    return splash.get_leaderboard()
 
-    # Convert full file paths to just filenames for frontend use
-    for entry in lb:
-        entry["video"] = os.path.basename(entry["video"])
-
-    # Convert full score into 2dp
-    for entry in lb:
-        entry["score"] = round(float(entry["score"]), 0)
-
-
-    return JSONResponse(content=lb)
-
-
-VIDEO_FILE = os.path.join(os.path.dirname(__file__), "latest.mp4")
 @app.get("/api/latestVideo")
 def get_latest_video():
-    # ping jacks server for latest video, if its diffrent, then get it nad return it,else return nothing
-    if not os.path.exists(VIDEO_FILE):
-        raise HTTPException(status_code=404, detail="Leaderboard file not found")
-    
-    return FileResponse(VIDEO_FILE)
+    """Returns the latest video recorded via the splash camera 
+
+    Returns:
+        FileResponse: Video file, .mp4 format
+    """
+    return splash.get_latest_video()

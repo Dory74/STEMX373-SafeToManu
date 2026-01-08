@@ -26,7 +26,7 @@ def __get_uv_info(lat, long):
 
 
 def __get_uv_info_chart(lat, long, skyType, save_path):
-    """Call the NIWA UV API for a latitude/longitude pair."""
+    """Call the NIWA UV chart API for a latitude/longitude pair to get the uv chart."""
     
     url = "https://api.niwa.co.nz/uv/chart.png"
     headers = {"x-apikey": NIWA_API_KEY}
