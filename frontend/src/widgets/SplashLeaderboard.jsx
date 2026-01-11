@@ -88,7 +88,7 @@ function Leaderboard() {
 
                             {/* Bottom: Name and Value */}
                             <div className="text-center font-bold">
-                                {/* <div className="uppercase text-sm">{user.name}</div> */}
+                                <div className="uppercase text-sm">{user.name}</div> 
                                 <div className="text-2xl">{user.score}</div>
                             </div>
                         </div>
