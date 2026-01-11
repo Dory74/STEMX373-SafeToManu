@@ -11,13 +11,13 @@ function LegalAndLogos() {
       </div>
 
       <div className="flex w-full">
-        <div className="flex-1 pr-4">
+        <div className="flex-1 pr-4 pl-1 pb-2">
           <img src={tccLightLogo} alt="TCC logo" />
         </div>
-        <div className="flex-1 pr-4">
+        <div className="flex-1 pr-4 pt-2">
           <img src={uowLightLogo} alt="TCC logo" />
         </div>
-        <div className="flex-1 pr-4">
+        <div className="flex-1 pr-4 pt-2">
         <img src={boprcLightLogo} alt="TCC logo" />
 
         </div>

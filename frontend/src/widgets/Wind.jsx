@@ -1,0 +1,57 @@
+import { useState, useEffect } from "react"
+
+const SERVER_ADDRESS = import.meta.env.VITE_API_URL 
+
+
+function WindSpeed() {
+
+  const [windSpeed, setWindSpeed] = useState(null);
+
+
+  useEffect(() => {
+    requestWindSpeed(); // Call the function when the component mounts
+  }, []);
+
+  const requestWindSpeed = async () => {
+    const url = new URL("/api/windSpeed", SERVER_ADDRESS)
+    
+
+    const response = await fetch(url, {
+      method: "GET",
+    })
+
+    if (!response.ok) {
+      throw new Error("Network response was not ok")
+    }
+    let data
+    try {
+      data = await response.json()
+    } catch (err) {
+      const text = await response.text()
+      console.error("Invalid JSON received from Wind speed endpoint", text)
+      throw err
+    }
+
+    setWindSpeed(data.speed ?? data)
+
+  }
+
+  return (
+    <div className="bg-gray-800 text-gray-100 p-6 rounded-xl shadow-md">
+
+      <h2 className="text-xl font-semibold mb-2">Wind speed Reading</h2>
+      <div className="text-gray-300 mb-4">
+        {windSpeed !== undefined && windSpeed !== null ? (
+          <p className="text-gray-100 font-semibold mb-4" >Current Wind speed Index: {windSpeed} kn</p>
+        ) : (
+          <p className="text-gray-300 mb-4">
+            N/A
+          </p>
+        )}
+      </div>
+      
+    </div>
+  )
+}
+
+export default WindSpeed

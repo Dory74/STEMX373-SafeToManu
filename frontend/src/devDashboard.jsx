@@ -1,6 +1,5 @@
 import UVReading from './dev_widgets/UVReading'
 import TideHeight from './dev_widgets/TideHeight'
-import TideSpeed from './dev_widgets/TideSpeed'
 import WaterTemp from './dev_widgets/WaterTemp'
 import WaterQuality from './dev_widgets/WaterQuality'
 import Wind from './dev_widgets/Wind'
@@ -23,7 +22,6 @@ function App() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <UVReading />
           <TideHeight />
-          {/* <TideSpeed /> */}
           <WaterTemp />
           <WaterQuality />
           <Wind />
