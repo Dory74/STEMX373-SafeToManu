@@ -9,8 +9,10 @@ import time
 
 # Config.
 PI_USER = "ju30"
-PI_IP = "10.191.8.5"
-#PI_IP = "10.144.99.133"
+# PI_IP = "10.191.8.5"
+# PI_IP = "10.144.99.133"
+# PI_IP = "10.130.66.133"
+PI_IP = "172.27.65.133"
 PI_VIDEO_PATH = "/home/ju30/splash.mp4"
 
 # Filepaths.
@@ -21,6 +23,7 @@ SCORES_CSV = os.path.join(RESULTS_DIR, "scores.csv")
 LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")
 # Variable.
 TOP_3 = 3
+
 
 # Running console commands.
 def run_cmd(cmd):
@@ -53,15 +56,18 @@ def safe_rename(src, dst, max_attempts=10):
 
     raise RuntimeError(f"Could not rename {src} → {dst}")
 
+
 # Leaderboard Load
 def load_leaderboard():
     if os.path.exists(LEADERBOARD_FILE):
         return json.load(open(LEADERBOARD_FILE, "r"))
     return []
 
+
 # Dumps leaderboard into json
 def save_leaderboard(lb):
     json.dump(lb, open(LEADERBOARD_FILE, "w"), indent=2)
+
 
 def normalize_filenames():
     lb = load_leaderboard()
@@ -95,6 +101,7 @@ def normalize_filenames():
     # Save cleaned leaderboard
     save_leaderboard(lb)
 
+
 # Record video function.
 def record_video():
     """Record video on the Pi."""
@@ -102,26 +109,27 @@ def record_video():
 
     ffmpeg_cmd = (
         f"ssh {PI_USER}@{PI_IP} "
-        f'ffmpeg -hide_banner -loglevel error '
-        f'-y -f v4l2 '
-        f'-input_format mjpeg '
-        f'-video_size 1280x720 '
-        f'-i /dev/video0 -t 5 '
+        f"ffmpeg -hide_banner -loglevel error "
+        f"-y -f v4l2 "
+        f"-input_format mjpeg "
+        f"-video_size 1280x720 "
+        f"-i /dev/video0 -t 5 "
         f'-vf "eq=brightness=0.05:contrast=1.3:saturation=1.2,fps=30" '
-        f'-vsync cfr '
-        f'-c:v libx264 -pix_fmt yuv420p '
-        f'-crf 18 -preset veryfast '
-        f'{PI_VIDEO_PATH}'
+        f"-vsync cfr "
+        f"-c:v libx264 -pix_fmt yuv420p "
+        f"-crf 18 -preset veryfast "
+        f"{PI_VIDEO_PATH}"
     )
 
     return run_cmd(ffmpeg_cmd)
+
 
 # Download from PI.
 def download_video():
     print("Downloading video...")
 
     local_path = os.path.join(WIN_SAVE_DIR, "splash_.mp4")
-    scp_cmd = f"scp {PI_USER}@{PI_IP}:{PI_VIDEO_PATH} \"{local_path}\""
+    scp_cmd = f'scp {PI_USER}@{PI_IP}:{PI_VIDEO_PATH} "{local_path}"'
 
     if run_cmd(scp_cmd):
         print(f"Saved video to: {local_path}")
@@ -146,22 +154,24 @@ def analyze_video(local_video):
         return None
     # Gets the max score from the scores.csv.
     df = pd.read_csv(SCORES_CSV)
-    max_score = df["score"].max()
+    max_score = float(df["score"].max())
     # Returns the max score.
     print(f"Max score: {max_score:.1f}")
     return max_score
+
 
 # Update the leaderboard with new scores.
 def update_leaderboard(score, video_path):
     lb = load_leaderboard()
 
     # add new result
-    lb.append({
-        "score": score,
-        "video": video_path,
-        "thumbnail": os.path.join(RESULTS_DIR, "best_splash_frame.png")
-    })
-
+    lb.append(
+        {
+            "score": float(score),
+            "video": video_path,
+            "thumbnail": os.path.join(RESULTS_DIR, "best_splash_frame.png"),
+        }
+    )
     # Sort and keep top 3.
     lb.sort(key=itemgetter("score"), reverse=True)
     top3 = lb[:TOP_3]
@@ -196,10 +206,11 @@ def update_leaderboard(score, video_path):
     for i, e in enumerate(top3, start=1):
         print(f"{i}: Score={e['score']:.1f}, Video={os.path.basename(e['video'])}")
 
+
 def main():
-    
+
     start_time = time.time()
-    
+
     # Writes to the console to show the program is starting.
     print("\nStarting\n")
 
@@ -212,7 +223,7 @@ def main():
     local_video = download_video()
     if not local_video:
         return
-    
+
     # If there is an issue analysing video, terminate.
     score = analyze_video(local_video)
     if score is None:
@@ -226,6 +237,7 @@ def main():
     elapsed = end_time - start_time
     minutes, seconds = divmod(elapsed, 60)
     print(f"\nFinished. Total runtime: {int(minutes)} min {seconds:.0f} sec")
+
 
 if __name__ == "__main__":
     main()
