@@ -7,14 +7,19 @@ import WaterQuality from '../widgets/WaterQuality';
 
 function DataWidgets() {
   return (
-    <div className="grid grid-cols-3 grid-rows-2 gap-4 p-2">
-      <div className="col-span-1 row-span-1"><WaterQuality /></div>
-      <div className="col-span-1 row-span-1"><WaterTemp /></div>
-      <div className="col-span-1 row-span-1"><UVReading /></div>
-      <div className="col-span-2 row-span-1"><TideHeight /></div>
-      <div className="col-span-1 row-span-1"><Wind /></div>
+    <div className="h-full w-full bg-[#030712] text-white px-4 py-6 sm:px-6">
+      <div className="flex flex-col gap-5 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="w-full"><UVReading /></div>
+          <div className="w-full"><TideHeight /></div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="w-full"><WaterTemp /></div>
+          <div className="w-full"><Wind /></div>
+          <div className="w-full sm:col-span-2 lg:col-span-1"><WaterQuality /></div>
+        </div>
+      </div>
     </div>
-
   );
 }
 

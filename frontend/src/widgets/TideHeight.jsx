@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react"
+import { useDevOverride } from "../context/DevOverrideContext"
+import DevSlider from "../components/DevSlider"
 
 const SERVER_ADDRESS = import.meta.env.VITE_API_URL
 const COLORS = {
@@ -12,7 +14,11 @@ const SAFE_THRESHOLD = 1.2
 const MAX_TIDE = 3.5
 
 function TideHeight() {
-  const [tideHeight, setTideHeight] = useState(null)
+  const [apiTideHeight, setApiTideHeight] = useState(null)
+  
+  const { overrides, toggleOverride, setValue } = useDevOverride()
+  const override = overrides.tideHeight
+  const tideHeight = override.enabled ? override.value : apiTideHeight
 
   useEffect(() => {
     requestTideHeight()
@@ -37,7 +43,7 @@ function TideHeight() {
       throw err
     }
 
-    setTideHeight(data.height ?? data)
+    setApiTideHeight(data.height ?? data)
   }
 
   const hasValue = tideHeight !== undefined && tideHeight !== null
@@ -146,6 +152,19 @@ function TideHeight() {
           </div>
         </div>
       </div>
+
+      {/* Dev Override Slider */}
+      <DevSlider
+        enabled={override.enabled}
+        onToggle={() => toggleOverride("tideHeight")}
+        value={override.value}
+        onChange={(val) => setValue("tideHeight", val)}
+        min={0}
+        max={3.5}
+        step={0.1}
+        unit="m"
+        label="Tide Height"
+      />
     </div>
   )
 }
