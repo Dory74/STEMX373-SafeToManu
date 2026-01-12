@@ -45,11 +45,16 @@ function WindSpeed() {
           <p className="text-gray-100 font-semibold mb-4" >Current Wind speed Index: {windSpeed} kn</p>
         ) : (
           <p className="text-gray-300 mb-4">
-            N/A
+            No current Wind speed value available—connect to the Wind speed monitoring endpoint to load data.
           </p>
         )}
       </div>
-      
+      <button className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+        onClick={async () => {
+          await requestWindSpeed();
+        }}>
+        Connect to API
+      </button>
     </div>
   )
 }

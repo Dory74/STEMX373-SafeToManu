@@ -11,18 +11,20 @@ function WaterQuality() {
     requestWaterQuality(); // Call the function when the component mounts
   }, []);
 
-  const getWaterQualityStatus = (value) => {
+  const getWaterQualityColor = (value) => {
     const waterQualityValue = parseFloat(value)
     if (Number.isNaN(waterQualityValue)) {
-      return { color: "gray", label: "N/A" }
+      return "gray"
     }
-    if (waterQualityValue === 1) {
-      return { color: "green", label: "Super Clean" }
+    if (waterQualityValue == 1) {
+      return "green"
     }
-    if (waterQualityValue === 2) {
-      return { color: "yellow", label: "Dirty" }
+    if (waterQualityValue == 2){
+      return "yellow"
     }
-    return { color: "red", label: "Don't swim" }
+    return "red"
+    
+
   }
 
   const requestWaterQuality = async () => {
@@ -49,30 +51,25 @@ function WaterQuality() {
 
   }
 
-  const waterQualityStatus =
-    waterQuality !== undefined && waterQuality !== null
-      ? getWaterQualityStatus(waterQuality)
-      : null
-
   return (
     <div className="bg-gray-800 text-gray-100 p-6 rounded-xl shadow-md">
 
-      <h2 className="text-xl font-semibold mb-2">Water Quality</h2>
+      <h2 className="text-xl font-semibold mb-2">Water Quality Reading</h2>
       <div className="text-gray-300 mb-4">
-        {waterQualityStatus ? (
-          <p
-            className="text-gray-100 font-semibold mb-4"
-            style={{ color: waterQualityStatus.color }}
-          >
-            {waterQualityStatus.label}
-          </p>
+        {waterQuality !== undefined && waterQuality !== null ? (
+          <p className="text-gray-100 font-semibold mb-4" style={{color: getWaterQualityColor(waterQuality)}}>Current Water Quality Index: {waterQuality}</p>
         ) : (
           <p className="text-gray-300 mb-4">
-            N/A
+            No current Water Quality value available—connect to the Water Quality monitoring endpoint to load data.
           </p>
         )}
       </div>
-
+      <button className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+        onClick={async () => {
+          await requestWaterQuality();
+        }}>
+        Connect to API
+      </button>
     </div>
   )
 }

@@ -19,7 +19,6 @@ def __now_utc():
 def __request_wind_10m(lat: str, lon: str):
     """
     Fetch 10 m wind speed from the MetOcean Point API.
-    Correct format: POST + JSON body.
     """
     url = "https://forecast-v2.metoceanapi.com/point/time"
 
@@ -54,20 +53,18 @@ def __request_wind_10m(lat: str, lon: str):
     return response.json()
 
 def get_wind_10m(lat, lon):
+    """
+    Fetch 10 m wind speed from the MetOcean Point API.
+    Returns wind speed in knots.
+    """
+    # print(f"Lat: {lat}, Lon: {lon}")
     
-    print(f"Lat: {lat}, Lon: {lon}")
-    print(f"Lat: {LAT}, Lon: {LON}")
-
     data = __request_wind_10m(lat, lon)
     speed_ms = data['variables']['wind.speed.at-10m']['data'][0]
     speed_knots = speed_ms * 1.94384
+    
     return round(speed_knots, 2)
 
-
-# data = get_wind_10m(
-#     lat=LAT,
-#     lon=LON
-# )
 
 # print(json.dumps(data, indent=4))
 #print(data['variables']['wind.speed.at-10m']['data'][0])

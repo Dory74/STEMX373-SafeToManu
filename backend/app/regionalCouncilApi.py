@@ -23,7 +23,6 @@ def __request_from_url(url):
     response = requests.get(url)
     data = response.json()
 
-    # return 1
     # Extract the final value from the observation series.
     values_array = data['observations'][0]['result']['values']
     latest_value = values_array[-1][-1]

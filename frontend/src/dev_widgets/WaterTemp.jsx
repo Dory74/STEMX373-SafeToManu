@@ -41,14 +41,19 @@ function WaterTemp() {
       <h2 className="text-xl font-semibold mb-2">Water Temprature</h2>
       <div className="text-gray-300 mb-4">
         {WaterTemp !== undefined && WaterTemp !== null ? (
-          <p className="text-gray-100 font-semibold mb-4">{WaterTemp}&deg; C</p>
+          <p className="text-gray-100 font-semibold mb-4">Current water temprature: {WaterTemp}&deg; C</p>
         ) : (
           <p className="text-gray-300 mb-4">
-            N/A
+            No current water temprature value available—connect to the water temprature monitoring endpoint to load data.
           </p>
         )}
       </div>
-
+      <button className="bg-indigo-500 hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+        onClick={async () => {
+          await requestWaterTemp();
+        }}>
+        Connect to API
+      </button>
     </div>
   )
 }
