@@ -10,11 +10,11 @@ TIDE_HEIGHT_PATH = "Tide%20Height.ChartDatum@EP569596&observedProperty=Tide%20He
 WATER_TEMP_PATH = "Water%20Temp.Primary@EP020617&observedProperty=Water%20Temp"
 ENTEROCOCCI_PATH = "Ent.Rec@EP095164&observedProperty=Enterococci"
 
-ALERT_LEVEL_THRESHOLDS = {
-    "1": 140, #Less than 140 safe to swim
-    "2": 280 # between 140 and 280 be alert
-              #Greater than 280- public warning status 
-}
+# ALERT_LEVEL_THRESHOLDS = {
+#     "1": 140, #Less than 140 safe to swim
+#     "2": 280 # between 140 and 280 be alert
+#               #Greater than 280- public warning status 
+# }
 
 
 def __request_from_url(url):
@@ -60,20 +60,9 @@ def get_enterococci():
     """Get the latest Enterococci lab result."""
     url = __generate_url(ENTEROCOCCI_PATH)
     enterococci_value = __request_from_url(url) # Entercoli level
-    threshold_1 = ALERT_LEVEL_THRESHOLDS["1"] # 140
-    threshold_2 = ALERT_LEVEL_THRESHOLDS["2"] # 280
+    
 
-    # Level 1: Safe to swim
-    if enterococci_value < threshold_1:
-        return 1
-
-    # Level 3: Public warning 
-    elif enterococci_value > threshold_2:
-        return 3
-
-    # Level 2: Be alert 
-    else: 
-        return 2
+    return enterococci_value
 
 
 def __debug_urls():

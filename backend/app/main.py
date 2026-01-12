@@ -93,9 +93,9 @@ def get_enterococci():
     """Return the current enterococci saftey level.
 
     Returns:
-        string: "1" = Safe to swim
-                "2" = Be alert
-                "3" = Public warning
+        string: "0" = Safe to swim
+                "140" = Be alert
+                "280" = Public warning
     """
     saftey_threshhold = regional.get_enterococci()
     return {"safteyLevel": saftey_threshhold}
