@@ -46,7 +46,6 @@ def measure_splash(mask):
     return area, hull_area, height, width
 
 
-# Gets the splash measurements for scoring, width is pretty irrelevant, could be removed.
 def manu_score(
     area, hull_area, height, width, AREA_MAX=75000, HULL_MAX=150000, HEIGHT_MAX=800
 ):
@@ -146,7 +145,7 @@ def process_video(video_path, input_box, min_area=100):
             approx_peak_idx = idx
 
     print(
-        f"First pass peak at frame {approx_peak_idx} (score :{approx_peak_score:.1f})"
+        f"First pass peak at frame {approx_peak_idx} (score : {approx_peak_score:.1f})"
     )
 
     # Second pass: 5 either side of peak frame.
@@ -275,6 +274,6 @@ if __name__ == "__main__":
     parser.add_argument("--video", type=str, required=True)
     args = parser.parse_args()
     # Fixed box - this will need to be adjusted later when we have a set angle.
-    INPUT_BOX = np.array([430, 450, 700, 1250])
+    INPUT_BOX = np.array([800, 50, 1250, 650])
     # INPUT_BOX = np.array([130, 450, 700, 1250])
     process_video(args.video, INPUT_BOX)

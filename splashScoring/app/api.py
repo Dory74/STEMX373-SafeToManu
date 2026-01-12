@@ -8,8 +8,8 @@ from fastapi.responses import FileResponse
 app = FastAPI()
 
 # Filepaths
-WIN_SAVE_DIR = r"C:\Users\Jack\sam2\splashScoring\videos"
-THUMBNAIL_DIR = r"C:\Users\Jack\sam2\splashScoring\results"
+WIN_SAVE_DIR = r"..\videos"
+THUMBNAIL_DIR = r"..\videos"
 LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")
 
 
