@@ -31,7 +31,7 @@ function StatusGood() {
           <span className="text-3xl sm:text-4xl text-white">✓</span>
         </div>
         {/* title */}
-        {/* tracking class used for letter spacing, no idea what hero does but seems to fix issues, so am just rolling with it */}
+        {/* tracking class used for letter spacing */}
         <h1
           className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight uppercase leading-none hero-condensed"
           style={{ color: COLORS.midnight }}
