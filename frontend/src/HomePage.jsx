@@ -5,12 +5,13 @@ import LegalAndLogos from './pageSegments/LegalAndLogos.jsx'
 
 function App() {
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col min-h-screen">
       {/* Segment 1 */}
-      <div className="relative h-[15%]">
+      <div className="relative h-[15vh]">
         <StatusGood />
         
-        <div className="absolute bottom-0 left-0 w-full leading-0">
+        {/* Wave divider */}
+        <div className="absolute bottom-0 left-0 w-full max-h-[100px] leading-0">
           <svg viewBox="0 0 1440 100" className="w-full h-40px">
             <path 
               fill="#02060f" 
@@ -21,18 +22,20 @@ function App() {
       </div>
 
       {/* Segment 2 */}
-      <div className="h-[40%] bg-[#02060f] px-3 sm:px-4">
+      <div className="h-[40vh] bg-[#02060f] px-3 sm:px-4">
         <SplashMeter />
       </div>
 
       {/* Segment 3 */}
-      <div className="h-[35%] bg-[#02060f]">
+      <div className="min-h-fit bg-[#02060f]">
         <DataWidgets />
       </div>
 
-      
+      {/* Segment 4 - Legal and Logos */}
+      <div className="bg-[#030712] py-4">
+        <LegalAndLogos />
+      </div>
     </div>
-    
   )
 }
 

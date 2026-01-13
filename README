@@ -1,0 +1,4 @@
+Installing Sam 
+    Scroll down to installation: https://github.com/facebookresearch/sam2
+    Pip isntall reqiurmetns
+    pip install e . (as per the insallation guide)
