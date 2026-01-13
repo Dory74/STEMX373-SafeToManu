@@ -274,6 +274,8 @@ if __name__ == "__main__":
     parser.add_argument("--video", type=str, required=True)
     args = parser.parse_args()
     # Fixed box - this will need to be adjusted later when we have a set angle.
-    INPUT_BOX = np.array([800, 50, 1250, 650])
+    #INPUT_BOX = np.array([400, 50, 1250, 650])
+    # TEST
     # INPUT_BOX = np.array([130, 450, 700, 1250])
+    INPUT_BOX = np.array([300, 200, 980, 520])
     process_video(args.video, INPUT_BOX)
