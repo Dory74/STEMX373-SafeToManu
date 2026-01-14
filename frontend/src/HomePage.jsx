@@ -7,7 +7,7 @@ function App() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Segment 1 */}
-      <div className="relative h-[15vh]">
+      <div className="relative h-[14vh]">
         <StatusGood />
         
         {/* Wave divider */}
@@ -22,7 +22,7 @@ function App() {
       </div>
 
       {/* Segment 2 */}
-      <div className="h-[40vh] bg-[#02060f] px-3 sm:px-4">
+      <div className="h-[26vh] bg-[#02060f] px-3 sm:px-4">
         <SplashMeter />
       </div>
 
