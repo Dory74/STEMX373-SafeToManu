@@ -10,8 +10,8 @@ const COLORS = {
   yellow: "#ffd447",
   label: "#8fb1d4",
 }
-const SAFE_THRESHOLD = 1.2
-const MAX_TIDE = 3.5
+const SAFE_THRESHOLD = 4.2
+const MAX_TIDE = 6.5
 
 function TideHeight() {
   const [apiTideHeight, setApiTideHeight] = useState(null)
@@ -160,8 +160,8 @@ function TideHeight() {
         value={override.value}
         onChange={(val) => setValue("tideHeight", val)}
         min={0}
-        max={3.5}
-        step={0.1}
+        max={6.5}
+        step={0.2}
         unit="m"
         label="Tide Height"
       />
