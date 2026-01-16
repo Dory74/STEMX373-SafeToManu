@@ -1,3 +1,26 @@
+"""
+Splash Scoring Pipeline Runner
+
+This module orchestrates the complete splash scoring workflow:
+1. Records video from a Raspberry Pi camera
+2. Downloads the video to local storage
+3. Runs computer vision analysis using SAM2
+4. Updates and maintains a leaderboard of top splash scores
+5. Manages file organization and cleanup
+
+The system is designed for automated splash scoring at the Tauranga Wharf.
+Dependencies:
+- ffmpeg (for video recording)
+- scp (for file transfer)
+- pandas (for CSV processing)
+- SAM2 analysis pipeline (manumeter.py)
+
+Configuration:
+- Raspberry Pi connection details
+- Video recording parameters
+- File paths and directories
+"""
+
 import shutil
 import subprocess
 import time
@@ -7,26 +30,38 @@ import pandas as pd
 from operator import itemgetter
 import time
 
-# Config.
-PI_USER = "ju30"
-# PI_IP = "10.191.8.5"
-# PI_IP = "10.144.99.133"
-# PI_IP = "10.130.66.133"
-PI_IP = "172.27.65.133"
-PI_VIDEO_PATH = "/home/ju30/splash.mp4"
+# Configuration constants.
+ # Raspberry Pi username.
+PI_USER = "ju30" 
+# IP of Pi, needs to be changed if network changes.
+PI_IP = "10.11.137.133"  
+# Path on the Pi to save recorded video.
+PI_VIDEO_PATH = "/home/ju30/splash.mp4" 
 
-# Filepaths.
-WIN_SAVE_DIR = r"..\videos"
+# Local file paths
+WIN_SAVE_DIR = r"..\videos"  
 RESULTS_DIR = r"..\results"
-PROCESS_SCRIPT = "manumeter.py"
+# Analysis script to run.
+PROCESS_SCRIPT = "manumeter.py"  
+# Scores CSV path.
 SCORES_CSV = os.path.join(RESULTS_DIR, "scores.csv")
-LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")
-# Variable.
-TOP_3 = 3
+# Leaderboard JSON file path.
+LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")  
+# Number of top scores to keep
+TOP_3 = 3  
 
 
 # Running console commands.
 def run_cmd(cmd):
+    """
+    Execute a shell command and capture its output.
+
+    Args:
+        cmd (str): The command to execute
+
+    Returns:
+        bool: True if command executed successfully (return code 0), False otherwise
+    """
     print(f"Running: {cmd}")
     try:
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -42,23 +77,42 @@ def run_cmd(cmd):
 
 # Renaming without removing videos prematurely.
 def safe_rename(src, dst, max_attempts=10):
+    """
+    Safely rename a file, avoiding overwrites by appending numbers if needed.
+
+    Args:
+        src (str): Source file path
+        dst (str): Destination file path
+        max_attempts (int): Maximum number of rename attempts with numbered suffixes
+
+    Returns:
+        str: The final path of the renamed file
+
+    Raises:
+        RuntimeError: If renaming fails after all attempts
+    """
     if not os.path.exists(src):
         print(f"Warning: source missing: {src}")
         return src
-
     base, ext = os.path.splitext(dst)
-
+    # Attempting to rename.
     for i in range(max_attempts + 1):
         attempt_path = dst if i == 0 else f"{base}_{i}{ext}"
         if not os.path.exists(attempt_path):
             os.rename(src, attempt_path)
             return attempt_path
-
+    # If error renaming files, display error.
     raise RuntimeError(f"Could not rename {src} → {dst}")
 
 
 # Leaderboard Load
 def load_leaderboard():
+    """
+    Load the leaderboard data from JSON file.
+
+    Returns:
+        list: List of leaderboard entries, empty list if file doesn't exist
+    """
     if os.path.exists(LEADERBOARD_FILE):
         return json.load(open(LEADERBOARD_FILE, "r"))
     return []
@@ -66,10 +120,23 @@ def load_leaderboard():
 
 # Dumps leaderboard into json
 def save_leaderboard(lb):
+    """
+    Save the leaderboard data to JSON file.
+
+    Args:
+        lb (list): Leaderboard entries to save
+    """
     json.dump(lb, open(LEADERBOARD_FILE, "w"), indent=2)
 
 
+# Method to properly rename files, helps with overwriting old files, and pushing data to the frontend as it makes the names consistent.
 def normalize_filenames():
+    """
+    Normalize leaderboard video filenames to consistent naming scheme.
+
+    Renames videos to format "{rank}_manu.mp4" and updates leaderboard entries.
+    This ensures consistent file naming for frontend display.
+    """
     lb = load_leaderboard()
     if not lb:
         return
@@ -102,8 +169,18 @@ def normalize_filenames():
     save_leaderboard(lb)
 
 
-# Record video function.
+# Method to record video from the Raspberry Pi..
 def record_video():
+    """
+    Record a 5-second video on the Raspberry Pi using ffmpeg.
+
+    Uses the Pi camera with optimized settings for splash capture:
+    - MJPEG input at 1280x720 resolution, 30 FPS
+    - Brightness, contrast, saturation adjustments
+
+    Returns:
+        bool: True if recording succeeded, False otherwise
+    """
     """Record video on the Pi."""
     print("Recording...")
 
@@ -124,8 +201,14 @@ def record_video():
     return run_cmd(ffmpeg_cmd)
 
 
-# Download from PI.
+# Downloads the recorded video from the pi.
 def download_video():
+    """
+    Download the recorded video from Raspberry Pi to local storage.
+
+    Returns:
+        str or None: Local path to downloaded video, or None if download failed
+    """
     print("Downloading video...")
 
     local_path = os.path.join(WIN_SAVE_DIR, "splash_.mp4")
@@ -141,6 +224,17 @@ def download_video():
 
 # Run script.
 def analyze_video(local_video):
+    """
+    Run the splash analysis algorithm on the downloaded video.
+
+    Executes manumeter.py to process the video and get relevant scores.
+
+    Args:
+        local_video (str): Path to the local video file to analyze
+
+    Returns:
+        The resulting score from the analysis. None if analysis failed.
+    """
     print("Running algorithm...")
     # Runs the SAM2 video algorithm script.
     cmd = f'python "{PROCESS_SCRIPT}" --video "{local_video}"'
@@ -162,6 +256,16 @@ def analyze_video(local_video):
 
 # Update the leaderboard with new scores.
 def update_leaderboard(score, video_path):
+    """
+    Update the leaderboard with a new splash score and manage top entries.
+
+    Adds the new score, sorts the leaderboard, keeps only top 3 entries,
+    and manages file cleanup for removed entries.
+
+    Args:
+        score (float): The splash score to add
+        video_path (str): Path to the video file for this score
+    """
     lb = load_leaderboard()
 
     # add new result
@@ -208,7 +312,16 @@ def update_leaderboard(score, video_path):
 
 
 def main():
+    """
+    Main pipeline execution function.
 
+    Orchestrates the complete splash scoring workflow:
+    1. Record video from Raspberry Pi
+    2. Download video to local storage
+    3. Run computer vision analysis
+    4. Update leaderboard with results
+    5. Normalize filenames for frontend display.
+    """
     start_time = time.time()
 
     # Writes to the console to show the program is starting.
