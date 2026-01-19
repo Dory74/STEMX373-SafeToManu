@@ -14,6 +14,11 @@ export const OVERRIDE_DEFAULTS = {
 
 export function DevOverrideProvider({ children }) {
   const [overrides, setOverrides] = useState(OVERRIDE_DEFAULTS)
+  const [showDevSliders, setShowDevSliders] = useState(false)
+
+  const toggleDevSliders = () => {
+    setShowDevSliders((prev) => !prev)
+  }
 
   const setOverride = (key, enabled, value) => {
     setOverrides((prev) => ({
@@ -42,7 +47,7 @@ export function DevOverrideProvider({ children }) {
 
   return (
     <DevOverrideContext.Provider
-      value={{ overrides, setOverride, toggleOverride, setValue, resetAll }}
+      value={{ overrides, setOverride, toggleOverride, setValue, resetAll, showDevSliders, toggleDevSliders }}
     >
       {children}
     </DevOverrideContext.Provider>

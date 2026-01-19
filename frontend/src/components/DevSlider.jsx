@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useDevOverride } from "../context/DevOverrideContext"
 
 const COLORS = {
   surface: "#050915",
@@ -33,6 +34,12 @@ function DevSlider({
   label = "Override",
 }) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const { showDevSliders } = useDevOverride()
+
+  // Don't render if dev sliders are hidden
+  if (!showDevSliders) {
+    return null
+  }
 
   return (
     <div
