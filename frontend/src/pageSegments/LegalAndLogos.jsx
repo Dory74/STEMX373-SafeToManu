@@ -39,21 +39,21 @@ function LegalAndLogos() {
               <img 
                 src={tccLightLogo} 
                 alt="Tauranga City Council logo" 
-                className="h-full w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                className="h-full w-auto object-contain opacity-100 transition-opacity"
               />
             </div>
             <div className="flex items-center justify-center h-16 sm:h-20">
               <img 
                 src={uowLightLogo} 
                 alt="University of Waikato logo" 
-                className="h-full w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                className="h-full w-auto object-contain opacity-100 transition-opacity"
               />
             </div>
             <div className="flex items-center justify-center h-16 sm:h-20">
               <img 
                 src={boprcLightLogo} 
                 alt="Bay of Plenty Regional Council logo" 
-                className="h-full w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                className="h-full w-auto object-contain opacity-100 transition-opacity"
               />
             </div>
           </div>
