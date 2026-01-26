@@ -129,44 +129,44 @@ def save_leaderboard(lb):
     json.dump(lb, open(LEADERBOARD_FILE, "w"), indent=2)
 
 
-# Method to properly rename files, helps with overwriting old files, and pushing data to the frontend as it makes the names consistent.
-def normalize_filenames():
-    """
-    Normalize leaderboard video filenames to consistent naming scheme.
+# # Method to properly rename files, helps with overwriting old files, and pushing data to the frontend as it makes the names consistent.
+# def normalize_filenames():
+#     """
+#     Normalize leaderboard video filenames to consistent naming scheme.
 
-    Renames videos to format "{rank}_manu.mp4" and updates leaderboard entries.
-    This ensures consistent file naming for frontend display.
-    """
-    lb = load_leaderboard()
-    if not lb:
-        return
+#     Renames videos to format "{rank}_manu.mp4" and updates leaderboard entries.
+#     This ensures consistent file naming for frontend display.
+#     """
+#     lb = load_leaderboard()
+#     if not lb:
+#         return
 
-    # Sort by score
-    lb.sort(key=lambda x: x["score"], reverse=True)
+#     # Sort by score
+#     lb.sort(key=lambda x: x["score"], reverse=True)
 
-    #  Renaming
-    for rank, entry in enumerate(lb, start=1):
-        old_path = entry["video"]
-        new_path = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.mp4")
+#     #  Renaming
+#     for rank, entry in enumerate(lb, start=1):
+#         old_path = entry["video"]
+#         new_path = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.mp4")
 
-        # Skip if already correct name
-        if os.path.abspath(old_path) == os.path.abspath(new_path):
-            continue
+#         # Skip if already correct name
+#         if os.path.abspath(old_path) == os.path.abspath(new_path):
+#             continue
 
-        # If it already exists, remove it.
-        if os.path.exists(new_path):
-            os.remove(new_path)
+#         # If it already exists, remove it.
+#         if os.path.exists(new_path):
+#             os.remove(new_path)
 
-        # Rename actual file
-        if os.path.exists(old_path):
-            os.rename(old_path, new_path)
-            print(f"Normalized: {old_path} → {new_path}")
+#         # Rename actual file
+#         if os.path.exists(old_path):
+#             os.rename(old_path, new_path)
+#             print(f"Normalized: {old_path} → {new_path}")
 
-        # Update entry
-        entry["video"] = new_path
+#         # Update entry
+#         entry["video"] = new_path
 
-    # Save cleaned leaderboard
-    save_leaderboard(lb)
+#     # Save cleaned leaderboard
+#     save_leaderboard(lb)
 
 
 # Method to record video from the Raspberry Pi..
@@ -272,43 +272,43 @@ def update_leaderboard(score, video_path):
     lb.append(
         {
             "score": float(score),
-            "video": video_path,
-            "thumbnail": os.path.join(RESULTS_DIR, "best_splash_frame.png"),
+            # "video": video_path,
+            # "thumbnail": os.path.join(RESULTS_DIR, "best_splash_frame.png"),
         }
     )
     # Sort and keep top 3.
     lb.sort(key=itemgetter("score"), reverse=True)
     top3 = lb[:TOP_3]
-    to_delete = lb[TOP_3:]
+    # to_delete = lb[TOP_3:]
 
-    # Delete removed entries.
-    for e in to_delete:
-        for key in ("video", "thumbnail"):
-            p = e.get(key)
-            if p and os.path.exists(p):
-                try:
-                    os.remove(p)
-                except:
-                    pass
+    # # Delete removed entries.
+    # for e in to_delete:
+    #     for key in ("video", "thumbnail"):
+    #         p = e.get(key)
+    #         if p and os.path.exists(p):
+    #             try:
+    #                 os.remove(p)
+    #             except:
+    #                 pass
 
-    for rank, entry in reversed(list(enumerate(top3, start=1))):
-        # Tries to safely rename video if another video has the same filename
-        if os.path.exists(entry["video"]):
-            new_video = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.mp4")
-            entry["video"] = safe_rename(entry["video"], new_video)
-        # Tries to safely rename thumbnail if another video has the same filename
-        if os.path.exists(entry["thumbnail"]):
-            new_thumb = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.png")
-            # Skip copying if same file.
-            if os.path.abspath(entry["thumbnail"]) != os.path.abspath(new_thumb):
-                shutil.copy(entry["thumbnail"], new_thumb)
-            entry["thumbnail"] = new_thumb
+    # for rank, entry in reversed(list(enumerate(top3, start=1))):
+    #     # Tries to safely rename video if another video has the same filename
+    #     if os.path.exists(entry["video"]):
+    #         new_video = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.mp4")
+    #         entry["video"] = safe_rename(entry["video"], new_video)
+    #     # Tries to safely rename thumbnail if another video has the same filename
+    #     if os.path.exists(entry["thumbnail"]):
+    #         new_thumb = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.png")
+    #         # Skip copying if same file.
+    #         if os.path.abspath(entry["thumbnail"]) != os.path.abspath(new_thumb):
+    #             shutil.copy(entry["thumbnail"], new_thumb)
+    #         entry["thumbnail"] = new_thumb
     # Updates the leaderboard.
     save_leaderboard(top3)
     print("\nUpdated leaderboard:")
     # Prints out the top 3.
     for i, e in enumerate(top3, start=1):
-        print(f"{i}: Score={e['score']:.1f}, Video={os.path.basename(e['video'])}")
+        print(f"{i}: Score={e['score']:.1f}")  # , Video={os.path.basename(e['video'])}
 
 
 def main():
@@ -344,7 +344,7 @@ def main():
 
     # Update the leaderboard and rename the files when the analysis is finished.
     update_leaderboard(score, local_video)
-    normalize_filenames()
+    # normalize_filenames()
     print("\nFinished.")
     end_time = time.time()
     elapsed = end_time - start_time

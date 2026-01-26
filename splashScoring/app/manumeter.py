@@ -198,7 +198,8 @@ def process_video(video_path, input_box, min_area=100):
         # Simple masking using colours. Needs adjusting depending on environment.
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         #ADJUST 135 higher for brighter days, ADJUST 80 to filter out blues and greens
-        splash_mask = cv2.inRange(hsv, (0, 0, 220), (180, 40, 255))
+        #splash_mask = cv2.inRange(hsv, (0, 0, 220), (180, 80, 255))
+        splash_mask = cv2.inRange(hsv, (0, 20, 220), (180, 40, 255)) 
         crop_mask = np.zeros_like(splash_mask)
         x1, y1, x2, y2 = input_box
         crop_mask[y1:y2, x1:x2] = splash_mask[y1:y2, x1:x2]
@@ -232,7 +233,8 @@ def process_video(video_path, input_box, min_area=100):
 
         # Color-based masking (different thresholds for second pass)
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-        splash_mask = cv2.inRange(hsv, (0, 0, 135), (180, 80, 255))
+        #splash_mask = cv2.inRange(hsv, (0, 0, 135), (180, 80, 255))
+        splash_mask = cv2.inRange(hsv, (0, 40, 135), (180, 80, 255))  
         crop_mask = np.zeros_like(splash_mask)
         crop_mask[y1:y2, x1:x2] = splash_mask[y1:y2, x1:x2]
         splash_mask = crop_mask
@@ -348,5 +350,5 @@ if __name__ == "__main__":
     #INPUT_BOX = np.array([400, 50, 1250, 650])
     # TEST
     INPUT_BOX = np.array([700, 200, 1000, 600])      
-    #INPUT_BOX = np.array([0, 0, 640, 480])
+    #INPUT_BOX = np.array([900, 400, 1100, 550])
     process_video(args.video, INPUT_BOX)
