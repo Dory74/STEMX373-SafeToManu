@@ -1,17 +1,30 @@
 import json
+import logging
 import os
 from typing import List
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-# Filepaths
-WIN_SAVE_DIR = r"..\videos"
-THUMBNAIL_DIR = r"..\videos"
-LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")
+LEADERBOARD_FILE = os.path.join(os.path.dirname(__file__), "leaderboard.json")
 
+logger.info(f"Splash Scoring API initialized")
+logger.info(f"Leaderboard file: {os.path.abspath(LEADERBOARD_FILE)}")
+
+
+@app.get("/splash")
+def root():
+    logger.info("Health check endpoint called")
+    return {"message": "Backend is running"}
 
 def _safe_join(directory: str, filename: str) -> str:
     """Prevent path traversal by normalizing requested filenames."""
@@ -19,46 +32,25 @@ def _safe_join(directory: str, filename: str) -> str:
     return os.path.join(directory, cleaned)
 
 
-@app.get("/leaderboard")
+@app.get("/splash/leaderboard")
 def get_leaderboard() -> List[dict]:
+    """Load and return the leaderboard data from the JSON file."""
     if not os.path.exists(LEADERBOARD_FILE):
-        return []
+        raise HTTPException(status_code=404, detail="Leaderboard file not found")
 
     with open(LEADERBOARD_FILE, "r") as f:
-        leaderboard = json.load(f)
+        lb = json.load(f)
 
-    for entry in leaderboard:
+    # Convert full file paths to just filenames for frontend use
+    for entry in lb:
         entry["video"] = os.path.basename(entry["video"])
-        entry["thumbnail"] = os.path.basename(entry["thumbnail"])
 
-    return leaderboard
-
-
-@app.get("/videos")
-def list_videos() -> List[str]:
-    return [f for f in os.listdir(WIN_SAVE_DIR) if f.endswith(".mp4")]
+    # Convert full score into a whole number
+    for entry in lb:
+        entry["score"] = round(float(entry["score"]), 0)
 
 
-@app.get("/videos/{filename}")
-def serve_video(filename: str) -> FileResponse:
-    file_path = _safe_join(WIN_SAVE_DIR, filename)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Video not found")
-    return FileResponse(file_path, media_type="video/mp4")
-
-
-@app.get("/thumbnails")
-def list_thumbnails() -> List[str]:
-    return [f for f in os.listdir(THUMBNAIL_DIR) if f.endswith(".png")]
-
-
-@app.get("/thumbnails/{filename}")
-def serve_thumbnail(filename: str) -> FileResponse:
-    file_path = _safe_join(THUMBNAIL_DIR, filename)
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Thumbnail not found")
-    return FileResponse(file_path, media_type="image/png")
-
+    return JSONResponse(content=lb)
 
 if __name__ == "__main__":
     import uvicorn
