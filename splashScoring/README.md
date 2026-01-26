@@ -19,7 +19,7 @@ The ManuMeter is a splash scoring detection system that analyses splashes from v
 
 ## Installation
 
-
+- See root readme file.
 
 ## Usage
 
@@ -29,7 +29,7 @@ To run the ManuMeter splash scoring pipeline:
 python run.py
 ```
 
-This one command will:
+This one-fits-all command will:
 1. Record a 5-second video from the Raspberry Pi camera.
 2. Download and send the video to the local machine.
 3. Run the ManuMeter analysis using SAM2.
@@ -40,7 +40,7 @@ This one command will:
 Edit the constants in `run.py` to configure:
 - Raspberry Pi IP address and username
 - File paths for videos and results
-- Number of top scores to keep
+- Number of top scores to keep (default is 3).
 
 ## Output
 
