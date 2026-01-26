@@ -1,9 +1,10 @@
 import json
 import logging
 import os
+import subprocess
 from typing import List
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 
 # Configure logging
@@ -51,6 +52,35 @@ def get_leaderboard() -> List[dict]:
 
 
     return JSONResponse(content=lb)
+
+
+@app.post("/splash/run")
+def trigger_run(background_tasks: BackgroundTasks):
+    """Trigger run.py to record, analyze, and update the leaderboard."""
+    logger.info("Run endpoint triggered - starting splash recording pipeline")
+    
+    def run_pipeline():
+        try:
+            script_path = os.path.join(os.path.dirname(__file__), "run.py")
+            logger.info(f"Executing run.py at: {script_path}")
+            result = subprocess.run(
+                ["python", script_path],
+                cwd=os.path.dirname(__file__),
+                capture_output=True,
+                text=True
+            )
+            if result.returncode == 0:
+                logger.info("run.py completed successfully")
+                logger.info(f"Output: {result.stdout}")
+            else:
+                logger.error(f"run.py failed with code {result.returncode}")
+                logger.error(f"Stderr: {result.stderr}")
+        except Exception as e:
+            logger.error(f"Error running pipeline: {e}")
+    
+    background_tasks.add_task(run_pipeline)
+    return {"message": "Splash recording pipeline started", "status": "running"}
+
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,8 +1,9 @@
 build:
 	docker compose up --build backend -d
 	docker compose up --build frontend -d
-	docker compose up --build splash_scoring -d
-	docker compose up proxy 
+	docker compose up proxy -d
+	docker compose up --build splash_scoring 
+
 
 down:
 	docker compose down
