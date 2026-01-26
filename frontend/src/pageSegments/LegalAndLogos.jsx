@@ -2,6 +2,7 @@ import React from "react";
 import boprcLightLogo from "../assets/logos/boprcLight.png";
 import tccLightLogo from "../assets/logos/tccLight.png";
 import uowLightLogo from "../assets/logos/uowDark.png";
+import { useDevOverride } from "../context/DevOverrideContext";
 
 const COLORS = {
   midnight: "#030712",
@@ -10,6 +11,8 @@ const COLORS = {
 };
 
 function LegalAndLogos() {
+  const { showDevSliders, toggleDevSliders } = useDevOverride();
+
   return (
     <div className="h-full w-full bg-[#030712] text-white px-4 py-6 sm:px-6">
       <div className="flex flex-col gap-6">
@@ -36,24 +39,45 @@ function LegalAndLogos() {
               <img 
                 src={tccLightLogo} 
                 alt="Tauranga City Council logo" 
-                className="h-full w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                className="h-full w-auto object-contain opacity-100 transition-opacity"
               />
             </div>
             <div className="flex items-center justify-center h-16 sm:h-20">
               <img 
                 src={uowLightLogo} 
                 alt="University of Waikato logo" 
-                className="h-full w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                className="h-full w-auto object-contain opacity-100 transition-opacity"
               />
             </div>
             <div className="flex items-center justify-center h-16 sm:h-20">
               <img 
                 src={boprcLightLogo} 
                 alt="Bay of Plenty Regional Council logo" 
-                className="h-full w-auto object-contain opacity-80 hover:opacity-100 transition-opacity"
+                className="h-full w-auto object-contain opacity-100 transition-opacity"
               />
             </div>
           </div>
+        </div>
+
+        {/* Dev Tools Toggle */}
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <span className="text-xs" style={{ color: COLORS.label }}>
+            🔧 Dev Sliders
+          </span>
+          <button
+            onClick={toggleDevSliders}
+            className="relative w-10 h-5 rounded-full transition-colors"
+            style={{
+              backgroundColor: showDevSliders ? "#2fffe1" : "#1a2744",
+            }}
+          >
+            <span
+              className="absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all"
+              style={{
+                left: showDevSliders ? "calc(100% - 18px)" : "2px",
+              }}
+            />
+          </button>
         </div>
       </div>
     </div>

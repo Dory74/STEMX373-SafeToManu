@@ -47,7 +47,7 @@ def __generate_url(url):
 def get_tide_height():
     """Get the latest tide height from the regional council SOS service."""
     url = __generate_url(TIDE_HEIGHT_PATH)
-    return __request_from_url(url)
+    return __request_from_url(url)+3.5  # Adjust to chart datum
 
 
 def get_water_temprature():

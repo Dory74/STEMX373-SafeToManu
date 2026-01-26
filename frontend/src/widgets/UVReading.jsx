@@ -22,7 +22,7 @@ function UVReading() {
   const [pointerX, setPointerX] = useState(0)
   const [pointerY, setPointerY] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [gaugeSize, setGaugeSize] = useState(100) // percentage size
+  const [gaugeSize, setGaugeSize] = useState(75) // percentage size
   
   const { overrides, toggleOverride, setValue } = useDevOverride()
   const override = overrides.uv
@@ -199,7 +199,7 @@ function UVReading() {
         label="UV Index"
       />
 
-      {/* Gauge Size Slider */}
+      {/* Gauge Size Slider
       <div
         className="mt-2 rounded-xl border overflow-hidden"
         style={{ borderColor: COLORS.border, backgroundColor: "#0a1020" }}
@@ -226,7 +226,7 @@ function UVReading() {
             }}
           />
         </div>
-      </div>
+      </div> */}
     </div>
   )
 }

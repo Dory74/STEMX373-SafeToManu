@@ -101,6 +101,38 @@ def get_enterococci():
     return {"safteyLevel": saftey_threshhold}
 
 
+@app.get("/api/warning-level")
+def get_warning_level():
+    """Return the overall warning level based on water quality and other metrics.
+    
+    Warning Levels:
+        1 = Good - Safe to swim
+        2 = Moderate - Swim with discretion
+        3 = Bad - Swimming not advised
+    
+    Returns:
+        dict: {"level": int, "message": str}
+    """
+    # Get water quality as the primary metric
+    water_quality = regional.get_enterococci()
+    
+    # Calculate warning level based on water quality thresholds
+    # Can incorporate other metrics here in the future (UV, wind, etc.)
+    if water_quality is None:
+        level = 1
+        message = "Waves clean • Sun shining • Conditions green"
+    elif water_quality <= 140:
+        level = 1
+        message = "Waves clean • Sun shining • Conditions green"
+    elif water_quality <= 280:
+        level = 2
+        message = "Elevated levels detected • Use caution • Check signage"
+    else:
+        level = 3
+        message = "High contaminants detected • Swimming not advised"
+    
+    return {"level": level, "message": message}
+
 
 # MetService API endpoints
 @app.get("/api/windSpeed")

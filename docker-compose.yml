@@ -20,19 +20,19 @@ services:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     restart: unless-stopped
 
-  # splash_scoring:
-  #   build:
-  #     context: ./splashScoring
-  #     args:
-  #       PORT: ${SPLASH_SCORING_PORT}
-  #   environment:
-  #     PORT: ${SPLASH_SCORING_PORT}
-  #   env_file:
-  #     - ./.env
-  #   container_name: splash_scoring
-  #   ports:
-  #     - "${SPLASH_SCORING_PORT}:${SPLASH_SCORING_PORT}"
-  #   restart: unless-stopped
+  splash_scoring:
+    build:
+      context: ./splashScoring
+      args:
+        PORT: ${SPLASH_SCORING_PORT}
+    environment:
+      PORT: ${SPLASH_SCORING_PORT}
+    env_file:
+      - ./.env
+    container_name: splash_scoring
+    ports:
+      - "${SPLASH_SCORING_PORT}:${SPLASH_SCORING_PORT}"
+    restart: unless-stopped
 
 
   frontend:

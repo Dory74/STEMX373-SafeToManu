@@ -7,7 +7,7 @@ const COLORS = {
   cyan: "#67fff0",
 }
 
-function StatusGood() {
+function StatusGood({ message }) {
   return (
     <div
       className="relative h-full overflow-hidden flex items-center justify-center text-center"
@@ -20,7 +20,7 @@ function StatusGood() {
       }}
     >
 
-      <div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6 px-4 pb-12 pt-5 sm:pb-16 lg:pb-20">
+      <div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6 px-4 pb-12 pt-10 sm:pb-16 lg:pb-20">
         {/* check mark circle */}
         <div
           className="flex items-center justify-center rounded-full w-16 h-16 sm:w-20 sm:h-20"
@@ -39,9 +39,8 @@ function StatusGood() {
           GOOD TO MANU
         </h1>
         {/* subtitle */}
-        {/* todo: dynamically change this text based on conditions */}
         <p className="text-xl sm:text-2xl md:text-3xl font-semibold hero-condensed">
-          Waves clean • Sun shining • Conditions green
+          {message || "Waves clean • Sun shining • Conditions green"}
         </p>
       </div>
 
