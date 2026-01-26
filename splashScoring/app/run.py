@@ -1,3 +1,26 @@
+"""
+Splash Scoring Pipeline Runner
+
+This module orchestrates the complete splash scoring workflow:
+1. Records video from a Raspberry Pi camera
+2. Downloads the video to local storage
+3. Runs computer vision analysis using SAM2
+4. Updates and maintains a leaderboard of top splash scores
+5. Manages file organization and cleanup
+
+The system is designed for automated splash scoring at the Tauranga Wharf.
+Dependencies:
+- ffmpeg (for video recording)
+- scp (for file transfer)
+- pandas (for CSV processing)
+- SAM2 analysis pipeline (manumeter.py)
+
+Configuration:
+- Raspberry Pi connection details
+- Video recording parameters
+- File paths and directories
+"""
+
 import shutil
 import subprocess
 import time
@@ -6,27 +29,46 @@ import json
 import pandas as pd
 from operator import itemgetter
 import time
+import random
 
-# Config.
-PI_USER = "ju30"
-# PI_IP = "10.191.8.5"
-# PI_IP = "10.144.99.133"
-# PI_IP = "10.130.66.133"
-PI_IP = "172.27.65.133"
-PI_VIDEO_PATH = "/home/ju30/splash.mp4"
+# Configuration constants.
+ # Raspberry Pi username.
+PI_USER = "ju30" 
+# IP of Pi, needs to be changed if network changes.
+PI_IP = "10.199.148.133"  
+# Path on the Pi to save recorded video.
+PI_VIDEO_PATH = "/home/ju30/splash.mp4" 
 
-# Filepaths.
-WIN_SAVE_DIR = r"..\videos"
+# Local file paths
+WIN_SAVE_DIR = r"..\videos"  
 RESULTS_DIR = r"..\results"
-PROCESS_SCRIPT = "manumeter.py"
+# Analysis script to run.
+PROCESS_SCRIPT = "manumeter.py"  
+# Scores CSV path.
 SCORES_CSV = os.path.join(RESULTS_DIR, "scores.csv")
-LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")
-# Variable.
-TOP_3 = 3
+# Leaderboard JSON file path.
+LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")  
+# Number of top scores to keep
+TOP_25 = 25
 
+
+def random_name_generator():
+    adjective = ["Wet", "Splashy", "Soaked", "Drenched", "Aqua", "Drippy", "Soggy", "Flooded", "Moist", "Saturated", "Damp", "Swamped", "Submerged", "Plunged", "Immersed", "Deluged", "Inundated", "Bathed", "Washed", "Rinsed", "Splashed", "Splattering", "Gushing", "Pouring", "Trickling", "Drizzling", "Spouting", "Streaming", "Cascading", "Raining", "Spraying", "Soaking", "Dousing", "Squirting", "Jetting", "Fountaining", "Spilling", "Overflowing", "Seeping", "Oozing", "Leaking", "Dribbling", "Sloshing", "Swishing", "Wetting", "Misting", "Fogging", "Steaming", "Condensing", "Evaporating", "Vaporizing", "Glistening", "Shimmering", "Glittering", "Sparkling", "Twinkling", "Dazzling", "Radiant", "Luminous", "Brilliant", "Vivid", "Vibrant", "Colorful", "Bright", "Shining", "Glowing", "Beaming", "Blazing", "Flashing", "Gleaming", "Scintillating", "Flickering", "Glinting", "Glaring", "Lustrous", "Polished", "Glossy", "Sleek", "Silky", "Smooth", "Velvety", "Satiny", "Glossed", "Sheened", "Burnished", "Glazed", "Varnished", "Enamelled", "Lacquered", "Coated", "Plated", "Gilded", "Silvered", "Chromed", "Nickelled", "Bronzed", "Coppered", "Brassed", "Tinned", "Zincified", "Aluminized", "Titanized", "Steelized", "Ironed", "Forged", "Wrought", "Molded", "Cast", "Shaped", "Formed", "Fashioned", "Crafted"]
+    creature = ["Dolphin", "Whale", "Shark", "Octopus", "Squid", "Seal", "SeaLion", "Walrus", "Manatee", "Narwhal", "Turtle", "Crab", "Lobster", "Jellyfish", "Starfish", "Seahorse", "Clam", "Oyster", "Coral", "Anemone", "Eel", "Ray", "Stingray", "MantaRay", "Barracuda", "Swordfish", "Marlin", "Tuna", "Salmon", "Trout", "Bass", "Cod", "Herring", "Mackerel", "Sardine", "Anchovy", "Carp", "Catfish", "Pufferfish", "Angelfish", "Guppy", "Goldfish", "BettaFish", "DiscusFish", "CichlidFish", "GobyFish", "BlennyFish", "WrasseFish", "Damselfish", "ButterflyFish", "Surgeonfish", "Parrotfish", "TangFish", "Triggerfish", "Filefish", "Boxfish", "Cowfish", "Puffer", "Porcupinefish", "Lionfish", "Scorpionfish", "Stonefish", "Frogfish", "Batfish", "Mudskipper", "Lungfish", "Coelacanth", "Hagfish", "Lamprey", "Jawfish", "Dragonet", "Pipefish", "Needlefish", "FlyingFish", "Mudfish", "Garfish", "Bowfin", "Bichir", "Polypterus", "Sturgeon", "Paddlefish", "Gar", "Arowana", "Archerfish", "Clownfish", "CleanerWrasse", "GoblinShark", "Hammerhead", "Megalodon", "ZebraShark", "LeopardShark", "NurseShark", "BullShark", "TigerShark", "GreatWhite", "WhitetipReefShark", "BlacktipReefShark", "SilvertipShark", "BlueShark", "ShortfinMako", "LongfinMako", "ThresherShark", "GoblinFish", "Anglerfish", "Viperfish", "Hatchetfish", "Lanternfish", "Dragonfish"]
+    number = str(random.randint(0, 999))
+    return f"{random.choice(adjective)}{random.choice(creature)}{number}"
 
 # Running console commands.
 def run_cmd(cmd):
+    """
+    Execute a shell command and capture its output.
+
+    Args:
+        cmd (str): The command to execute
+
+    Returns:
+        bool: True if command executed successfully (return code 0), False otherwise
+    """
     print(f"Running: {cmd}")
     try:
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -42,23 +84,42 @@ def run_cmd(cmd):
 
 # Renaming without removing videos prematurely.
 def safe_rename(src, dst, max_attempts=10):
+    """
+    Safely rename a file, avoiding overwrites by appending numbers if needed.
+
+    Args:
+        src (str): Source file path
+        dst (str): Destination file path
+        max_attempts (int): Maximum number of rename attempts with numbered suffixes
+
+    Returns:
+        str: The final path of the renamed file
+
+    Raises:
+        RuntimeError: If renaming fails after all attempts
+    """
     if not os.path.exists(src):
         print(f"Warning: source missing: {src}")
         return src
-
     base, ext = os.path.splitext(dst)
-
+    # Attempting to rename.
     for i in range(max_attempts + 1):
         attempt_path = dst if i == 0 else f"{base}_{i}{ext}"
         if not os.path.exists(attempt_path):
             os.rename(src, attempt_path)
             return attempt_path
-
+    # If error renaming files, display error.
     raise RuntimeError(f"Could not rename {src} → {dst}")
 
 
 # Leaderboard Load
 def load_leaderboard():
+    """
+    Load the leaderboard data from JSON file.
+
+    Returns:
+        list: List of leaderboard entries, empty list if file doesn't exist
+    """
     if os.path.exists(LEADERBOARD_FILE):
         return json.load(open(LEADERBOARD_FILE, "r"))
     return []
@@ -66,44 +127,67 @@ def load_leaderboard():
 
 # Dumps leaderboard into json
 def save_leaderboard(lb):
+    """
+    Save the leaderboard data to JSON file.
+
+    Args:
+        lb (list): Leaderboard entries to save
+    """
     json.dump(lb, open(LEADERBOARD_FILE, "w"), indent=2)
 
 
-def normalize_filenames():
-    lb = load_leaderboard()
-    if not lb:
-        return
+# # Method to properly rename files, helps with overwriting old files, and pushing data to the frontend as it makes the names consistent.
+# def normalize_filenames():
+#     """
+#     Normalize leaderboard video filenames to consistent naming scheme.
 
-    # Sort by score
-    lb.sort(key=lambda x: x["score"], reverse=True)
+#     Renames videos to format "{rank}_manu.mp4" and updates leaderboard entries.
+#     This ensures consistent file naming for frontend display.
+#     """
+#     lb = load_leaderboard()
+#     if not lb:
+#         return
 
-    #  Renaming
-    for rank, entry in enumerate(lb, start=1):
-        old_path = entry["video"]
-        new_path = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.mp4")
+#     # Sort by score
+#     lb.sort(key=lambda x: x["score"], reverse=True)
 
-        # Skip if already correct name
-        if os.path.abspath(old_path) == os.path.abspath(new_path):
-            continue
+#     #  Renaming
+#     for rank, entry in enumerate(lb, start=1):
+#         old_path = entry["video"]
+#         new_path = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.mp4")
 
-        # If it already exists, remove it.
-        if os.path.exists(new_path):
-            os.remove(new_path)
+#         # Skip if already correct name
+#         if os.path.abspath(old_path) == os.path.abspath(new_path):
+#             continue
 
-        # Rename actual file
-        if os.path.exists(old_path):
-            os.rename(old_path, new_path)
-            print(f"Normalized: {old_path} → {new_path}")
+#         # If it already exists, remove it.
+#         if os.path.exists(new_path):
+#             os.remove(new_path)
 
-        # Update entry
-        entry["video"] = new_path
+#         # Rename actual file
+#         if os.path.exists(old_path):
+#             os.rename(old_path, new_path)
+#             print(f"Normalized: {old_path} → {new_path}")
 
-    # Save cleaned leaderboard
-    save_leaderboard(lb)
+#         # Update entry
+#         entry["video"] = new_path
+
+#     # Save cleaned leaderboard
+#     save_leaderboard(lb)
 
 
-# Record video function.
+# Method to record video from the Raspberry Pi..
 def record_video():
+    """
+    Record a 5-second video on the Raspberry Pi using ffmpeg.
+
+    Uses the Pi camera with optimized settings for splash capture:
+    - MJPEG input at 1280x720 resolution, 30 FPS
+    - Brightness, contrast, saturation adjustments
+
+    Returns:
+        bool: True if recording succeeded, False otherwise
+    """
     """Record video on the Pi."""
     print("Recording...")
 
@@ -124,8 +208,14 @@ def record_video():
     return run_cmd(ffmpeg_cmd)
 
 
-# Download from PI.
+# Downloads the recorded video from the pi.
 def download_video():
+    """
+    Download the recorded video from Raspberry Pi to local storage.
+
+    Returns:
+        str or None: Local path to downloaded video, or None if download failed
+    """
     print("Downloading video...")
 
     local_path = os.path.join(WIN_SAVE_DIR, "splash_.mp4")
@@ -141,6 +231,17 @@ def download_video():
 
 # Run script.
 def analyze_video(local_video):
+    """
+    Run the splash analysis algorithm on the downloaded video.
+
+    Executes manumeter.py to process the video and get relevant scores.
+
+    Args:
+        local_video (str): Path to the local video file to analyze
+
+    Returns:
+        The resulting score from the analysis. None if analysis failed.
+    """
     print("Running algorithm...")
     # Runs the SAM2 video algorithm script.
     cmd = f'python "{PROCESS_SCRIPT}" --video "{local_video}"'
@@ -161,55 +262,78 @@ def analyze_video(local_video):
 
 
 # Update the leaderboard with new scores.
-def update_leaderboard(score, video_path):
+def update_leaderboard(score, video_path, username):
+    """
+    Update the leaderboard with a new splash score and manage top entries.
+
+    Adds the new score, sorts the leaderboard, keeps only top 3 entries,
+    and manages file cleanup for removed entries.
+
+    Args:
+        score (float): The splash score to add
+        video_path (str): Path to the video file for this score
+    """
     lb = load_leaderboard()
 
     # add new result
     lb.append(
         {
+            "username": username,
             "score": float(score),
-            "video": video_path,
-            "thumbnail": os.path.join(RESULTS_DIR, "best_splash_frame.png"),
+            # "video": video_path,
+            # "thumbnail": os.path.join(RESULTS_DIR, "best_splash_frame.png"),
         }
     )
     # Sort and keep top 3.
     lb.sort(key=itemgetter("score"), reverse=True)
-    top3 = lb[:TOP_3]
-    to_delete = lb[TOP_3:]
+    top3 = lb[:TOP_25]
+    # to_delete = lb[TOP_25:]
 
-    # Delete removed entries.
-    for e in to_delete:
-        for key in ("video", "thumbnail"):
-            p = e.get(key)
-            if p and os.path.exists(p):
-                try:
-                    os.remove(p)
-                except:
-                    pass
+    # # Delete removed entries.
+    # for e in to_delete:
+    #     for key in ("video", "thumbnail"):
+    #         p = e.get(key)
+    #         if p and os.path.exists(p):
+    #             try:
+    #                 os.remove(p)
+    #             except:
+    #                 pass
 
-    for rank, entry in reversed(list(enumerate(top3, start=1))):
-        # Tries to safely rename video if another video has the same filename
-        if os.path.exists(entry["video"]):
-            new_video = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.mp4")
-            entry["video"] = safe_rename(entry["video"], new_video)
-        # Tries to safely rename thumbnail if another video has the same filename
-        if os.path.exists(entry["thumbnail"]):
-            new_thumb = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.png")
-            # Skip copying if same file.
-            if os.path.abspath(entry["thumbnail"]) != os.path.abspath(new_thumb):
-                shutil.copy(entry["thumbnail"], new_thumb)
-            entry["thumbnail"] = new_thumb
+    # for rank, entry in reversed(list(enumerate(top3, start=1))):
+    #     # Tries to safely rename video if another video has the same filename
+    #     if os.path.exists(entry["video"]):
+    #         new_video = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.mp4")
+    #         entry["video"] = safe_rename(entry["video"], new_video)
+    #     # Tries to safely rename thumbnail if another video has the same filename
+    #     if os.path.exists(entry["thumbnail"]):
+    #         new_thumb = os.path.join(WIN_SAVE_DIR, f"{rank}_manu.png")
+    #         # Skip copying if same file.
+    #         if os.path.abspath(entry["thumbnail"]) != os.path.abspath(new_thumb):
+    #             shutil.copy(entry["thumbnail"], new_thumb)
+    #         entry["thumbnail"] = new_thumb
     # Updates the leaderboard.
     save_leaderboard(top3)
     print("\nUpdated leaderboard:")
     # Prints out the top 3.
     for i, e in enumerate(top3, start=1):
-        print(f"{i}: Score={e['score']:.1f}, Video={os.path.basename(e['video'])}")
+        print(f"{i}: Score={e['score']:.1f}")  # , Video={os.path.basename(e['video'])}
 
 
 def main():
+    """
+    Main pipeline execution function.
 
+    Orchestrates the complete splash scoring workflow:
+    1. Record video from Raspberry Pi
+    2. Download video to local storage
+    3. Run computer vision analysis
+    4. Update leaderboard with results
+    5. Normalize filenames for frontend display.
+    """
     start_time = time.time()
+
+    username = random_name_generator()
+    print(f"\nCurrent Competitor: {username}\n")
 
     # Writes to the console to show the program is starting.
     print("\nStarting\n")
@@ -230,8 +354,8 @@ def main():
         return
 
     # Update the leaderboard and rename the files when the analysis is finished.
-    update_leaderboard(score, local_video)
-    normalize_filenames()
+    update_leaderboard(score, local_video, username)
+    # normalize_filenames()
     print("\nFinished.")
     end_time = time.time()
     elapsed = end_time - start_time
