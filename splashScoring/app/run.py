@@ -51,11 +51,11 @@ LEADERBOARD_FILE = "leaderboard.json"
 #Stats file, also doubles as prompt to update frontend when updated.
 STATS_FILE = "stats.json"
 
-def update_stats(latest_score):
+def update_stats(latest_score, username):
     """
     Updates the stats.json file with the total jump count and the most recent score.
     """
-    stats = {"total_jumps": 0, "latest_score": 0.0}
+    stats = {"total_jumps": 0, "latest_score": 0.0, "latest_username": "None"}
     
     # Load existing stats if file exists
     if os.path.exists(STATS_FILE):
@@ -68,6 +68,7 @@ def update_stats(latest_score):
     # Update values
     stats["total_jumps"] += 1
     stats["latest_score"] = float(latest_score)
+    stats["latest_username"] = username
 
     # Save back to file
     with open(STATS_FILE, "w") as f:
@@ -391,7 +392,7 @@ def main():
         return
 
     # Update stats file, also prompts frontend update.
-    update_stats(score)
+    update_stats(score, username)
     
     # Update the leaderboard and rename the files when the analysis is finished.
     update_leaderboard(score, local_video, username)
