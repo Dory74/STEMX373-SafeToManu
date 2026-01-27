@@ -47,7 +47,33 @@ PROCESS_SCRIPT = "manumeter.py"
 # Scores CSV path.
 SCORES_CSV = os.path.join(RESULTS_DIR, "scores.csv")
 # Leaderboard JSON file path.
-LEADERBOARD_FILE = os.path.join(WIN_SAVE_DIR, "leaderboard.json")  
+LEADERBOARD_FILE = "leaderboard.json"  
+#Stats file, also doubles as prompt to update frontend when updated.
+STATS_FILE = "stats.json"
+
+def update_stats(latest_score):
+    """
+    Updates the stats.json file with the total jump count and the most recent score.
+    """
+    stats = {"total_jumps": 0, "latest_score": 0.0}
+    
+    # Load existing stats if file exists
+    if os.path.exists(STATS_FILE):
+        try:
+            with open(STATS_FILE, "r") as f:
+                stats = json.load(f)
+        except Exception as e:
+            print(f"Error loading stats: {e}")
+
+    # Update values
+    stats["total_jumps"] += 1
+    stats["latest_score"] = float(latest_score)
+
+    # Save back to file
+    with open(STATS_FILE, "w") as f:
+        json.dump(stats, f, indent=2)
+    print(f"Stats updated: Total Jumps = {stats['total_jumps']}")
+
 # Number of top scores to keep
 TOP_25 = 25
 
@@ -336,7 +362,18 @@ def main():
     print(f"\nCurrent Competitor: {username}\n")
 
     # Writes to the console to show the program is starting.
-    print("\nStarting\n")
+    print("\nGet ready to jump in\n")
+    print("5...")
+    time.sleep(1)
+    print("4...")
+    time.sleep(1)
+    print("3...")
+    time.sleep(1)
+    print("2...")
+    time.sleep(1)
+    print("1...")
+    time.sleep(1)
+    print("Jump!\n")
 
     # If there is an issue recording video, terminate.
     if not record_video():
@@ -353,6 +390,9 @@ def main():
     if score is None:
         return
 
+    # Update stats file, also prompts frontend update.
+    update_stats(score)
+    
     # Update the leaderboard and rename the files when the analysis is finished.
     update_leaderboard(score, local_video, username)
     # normalize_filenames()
