@@ -3,8 +3,8 @@ import TideHeight from './dev_widgets/TideHeight'
 import WaterTemp from './dev_widgets/WaterTemp'
 import WaterQuality from './dev_widgets/WaterQuality'
 import Wind from './dev_widgets/Wind'
-import Leaderboard from './dev_widgets/Leaderboard'
-import InstantReplay from './dev_widgets/InstantReplay'
+import Leaderboard from './widgets/SplashLeaderboard'
+import InstantReplay from './widgets/InstantReplay'
 
 
 
@@ -25,8 +25,8 @@ function App() {
           <WaterTemp />
           <WaterQuality />
           <Wind />
-          <Leaderboard />
-          <InstantReplay />
+          <Leaderboard/>
+          <InstantReplay/>
         </div>
       </div>
     </div>

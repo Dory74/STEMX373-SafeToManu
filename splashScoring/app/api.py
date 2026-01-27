@@ -42,10 +42,6 @@ def get_leaderboard() -> List[dict]:
     with open(LEADERBOARD_FILE, "r") as f:
         lb = json.load(f)
 
-    # Convert full file paths to just filenames for frontend use
-    for entry in lb:
-        entry["video"] = os.path.basename(entry["video"])
-
     # Convert full score into a whole number
     for entry in lb:
         entry["score"] = round(float(entry["score"]), 0)

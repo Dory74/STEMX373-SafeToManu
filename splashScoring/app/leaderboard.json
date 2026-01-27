@@ -3,15 +3,18 @@
 [
     
     {
-        "score": 23.333,
-        "video": "path\\to\\video"
+        "username": "TtianFish",
+        "score": 23.8633
+
     },
     {
-        "score": 52.333,
-        "video":"path\\to\\video"
+        "username": "SplashEel",
+        "score": 33.2
+
     },
     {
-        "score": 26.333,
-        "video":"path\\to\\video"
+        "username": "PufferMan",
+        "score": 53.333
+
     }
 ]
