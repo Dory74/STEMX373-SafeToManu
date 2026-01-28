@@ -1,8 +1,5 @@
 import requests
-import os
-from dotenv import load_dotenv
-from datetime import datetime, timedelta
-import json
+from datetime import datetime
 
 
 BASE_URL = "http://sos.boprc.govt.nz/service?service=SOS&version=2.0.0&request=GetObservation&offering="
@@ -10,11 +7,6 @@ TIDE_HEIGHT_PATH = "Tide%20Height.ChartDatum@EP569596&observedProperty=Tide%20He
 WATER_TEMP_PATH = "Water%20Temp.Primary@EP020617&observedProperty=Water%20Temp"
 ENTEROCOCCI_PATH = "Ent.Rec@EP095164&observedProperty=Enterococci"
 
-# ALERT_LEVEL_THRESHOLDS = {
-#     "1": 140, #Less than 140 safe to swim
-#     "2": 280 # between 140 and 280 be alert
-#               #Greater than 280- public warning status 
-# }
 
 
 def __request_from_url(url):

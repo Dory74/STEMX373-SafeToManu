@@ -25,8 +25,7 @@ def get_leaderboard():
 VIDEO_FILE = os.path.join(os.path.dirname(__file__), "latest.mp4")
 def get_latest_video():
     """Return the latest video file recorded via the splash camera."""
-    # ping jacks server for latest video, if its diffrent, then get it nad return it,else return nothing
     if not os.path.exists(VIDEO_FILE):
-        raise HTTPException(status_code=404, detail="Leaderboard file not found")
+        raise HTTPException(status_code=404, detail="Video file not found")
     
     return FileResponse(VIDEO_FILE)

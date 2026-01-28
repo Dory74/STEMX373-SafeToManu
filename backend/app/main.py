@@ -1,10 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.responses import FileResponse
 
-import json
-import os
 from dotenv import load_dotenv
 
 from . import uvApi
@@ -26,15 +22,12 @@ origins = [
     "http://127.0.0.1:5173",
     "http://192.168.1.6:8230",
     "http://192.168.1.6:5080",
-    "http://192.168.1.2:5173",
-    "http://192.168.1.2:5080",
 
 
     # Cloudflare Zero Trust / deployed frontend hosts
     "https://manu.byteme.pro",
     "http://manu.byteme.pro",
-    # VITE_API_URL,
-    # VITE_FRONTEND_URL,
+
 ]
 
 app.add_middleware(
@@ -52,7 +45,7 @@ def root():
 
 
 
-# NIWA UV API endpoints
+# NIWA UV API endpoint
 @app.get("/api/uv")
 def get_uv():
     """Return the current-hour UV index for the provided Tauranga coordinates.\
@@ -67,7 +60,7 @@ def get_uv():
     return {"lat": LAT, "long": LON, "uv": uv_value}
 
 
-#BOP Regional Council API endpoints
+#BOP Regional Council API endpoint
 @app.get("/api/tideHeight")
 def get_current_tide_height():
     """Return the current tide height in metres.
