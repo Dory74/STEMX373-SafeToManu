@@ -13,6 +13,6 @@ export default defineConfig({
     react(),
   ],
   server: {
-        allowedHosts: ['manu.byteme.pro'],
+        allowedHosts: ['manu.byteme.pro'], //!!!For somwreason env varible wasn't working here, please change this to match your deployed frontend host
       },
 })

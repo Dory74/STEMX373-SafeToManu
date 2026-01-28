@@ -7,7 +7,7 @@ import Leaderboard from './widgets/SplashLeaderboard'
 import InstantReplay from './widgets/InstantReplay'
 
 
-
+// !!!!!!!!! Hasn't been updated to match changes in backend, use at your own risk. This includes all the dev widgets !!!!!!!!! //
 function App() {
   return (
     <div className="min-h-screen w-full bg-gray-900 text-gray-100">

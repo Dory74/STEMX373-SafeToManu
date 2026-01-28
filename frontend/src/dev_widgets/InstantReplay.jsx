@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react"
 
 const SERVER_ADDRESS = import.meta.env.VITE_API_URL 
-function InstantReplay() {
-  const [videoUrl, setVideoUrl] = useState("")
-  const [status, setStatus] = useState("idle")
-  const [error, setError] = useState("")
 
+function InstantReplay() {
+  const [videoUrl, setVideoUrl] = useState("")   // blob URL for the video
+  const [status, setStatus] = useState("idle")   // idle | loading | loaded | error
+  const [error, setError] = useState("")         // error message to display
+
+  // cleanup blob URL when component unmounts or videoUrl changes
   useEffect(() => {
     return () => {
       if (videoUrl) {
@@ -14,6 +16,7 @@ function InstantReplay() {
     }
   }, [videoUrl])
 
+  // fetch the latest replay video from the backend
   const fetchLatestVideo = async () => {
     setStatus("loading")
     setError("")
@@ -27,10 +30,10 @@ function InstantReplay() {
             : `Request failed with status ${response.status}`
         )
       }
-      const blob = await response.blob()
-      const objectUrl = URL.createObjectURL(blob)
+      const blob = await response.blob()              // get video as blob
+      const objectUrl = URL.createObjectURL(blob)     // create local URL for video element
       setVideoUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev)
+        if (prev) URL.revokeObjectURL(prev)           // revoke old URL to free memory
         return objectUrl
       })
       setStatus("loaded")

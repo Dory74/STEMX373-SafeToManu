@@ -15,19 +15,12 @@ function App() {
         <Banner />
       </div>
 
-      {/* Segment 2 - Instant Replay & Leaderboard (hidden when conditions are bad)
-      {!isBadConditions && (
-        <div className="h-[26vh] bg-[#02060f] px-3 sm:px-4">
-          <SplashMeter />
-        </div>
-      )} */}
-
-      {/* Segment 3 */}
+      {/* Segment 2 - Data Widgets */}
       <div className="min-h-fit bg-[#02060f]">
         <DataWidgets />
       </div>
 
-      {/* Segment 4 - Legal and Logos */}
+      {/* Segment 3 - Legal and Logos */}
       <div className="bg-[#030712] py-4">
         <LegalAndLogos />
       </div>

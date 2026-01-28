@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
-
+// !!!!!!!!!! Depreciated Hasn't been updated to match changes in backend, use at your own risk. !!!!!!!!! //
 const SERVER_ADDRESS = import.meta.env.VITE_API_URL
 
+// theme colors for the widget
 const COLORS = {
   midnight: "#030712",
   border: "#0f1b2f",
@@ -11,10 +12,11 @@ const COLORS = {
 }
 
 function InstantReplay() {
-  const [videoUrl, setVideoUrl] = useState("")
-  const [status, setStatus] = useState("idle")
-  const [error, setError] = useState("")
+  const [videoUrl, setVideoUrl] = useState("")   // blob URL for the video
+  const [status, setStatus] = useState("idle")   // idle | loading | loaded | error
+  const [error, setError] = useState("")         // error message to display
 
+  // cleanup blob URL when component unmounts or videoUrl changes
   useEffect(() => {
     return () => {
       if (videoUrl) {
@@ -23,6 +25,7 @@ function InstantReplay() {
     }
   }, [videoUrl])
 
+  // fetch the latest replay video from the backend
   const fetchLatestVideo = async () => {
     setStatus("loading")
     setError("")
@@ -36,10 +39,10 @@ function InstantReplay() {
             : `Request failed with status ${response.status}`
         )
       }
-      const blob = await response.blob()
-      const objectUrl = URL.createObjectURL(blob)
+      const blob = await response.blob()              // get video as blob
+      const objectUrl = URL.createObjectURL(blob)     // create local URL for video element
       setVideoUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev)
+        if (prev) URL.revokeObjectURL(prev)           // revoke old URL to free memory
         return objectUrl
       })
       setStatus("loaded")
@@ -50,17 +53,18 @@ function InstantReplay() {
   }
 
   return (
+    // main container with gradient background
     <div
       className="relative h-full rounded-3xl p-4 sm:p-5 text-white"
       style={{
-        //top left to bottom right gradient
+        // top left to bottom right gradient
         background: `linear-gradient(145deg, #061225, ${COLORS.midnight})`,
         borderColor: COLORS.border,
         boxShadow: `0 0 0 6px ${COLORS.midnight}, 0 0 0 10px ${COLORS.border}`,
       }}
     >
       
-
+      {/* header section with title and refresh button */}
       <div className="flex items-start justify-between gap-4 mb-4 sm:mb-5">
         <div>
           {/* title */}
@@ -88,10 +92,12 @@ function InstantReplay() {
         </button>
       </div>
 
+      {/* error message display */}
       {status === "error" && (
         <div className="text-red-300 text-sm mb-3">{error}</div>
       )}
 
+      {/* video container with glowing border */}
       <div
         className="relative w-full rounded-2xl border-4 overflow-hidden"
         style={{
@@ -100,6 +106,7 @@ function InstantReplay() {
           backgroundColor: "#000814",
         }}
       >
+        {/* show video player if loaded, otherwise show placeholder */}
         {videoUrl ? (
           <video
             key={videoUrl}

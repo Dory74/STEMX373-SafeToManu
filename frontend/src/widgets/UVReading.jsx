@@ -4,43 +4,53 @@ import { useDevOverride } from "../context/DevOverrideContext"
 import DevSlider from "../components/DevSlider"
 
 const SERVER_ADDRESS = import.meta.env.VITE_API_URL
+
+// SVG gauge dimensions
 const GAUGE_CENTER_X = 80
 const GAUGE_CENTER_Y = 80
 const GAUGE_RADIUS = 65
-const MAX_UV = 13
+const MAX_UV = 13  // maximum UV index for gauge scaling
+
+// theme colors for the widget
 const COLORS = {
-  surface: "#050915",
-  border: "#0f1b2f",
-  label: "#8fb1d4",
-  mint: "#2fffe1",
-  yellow: "#ffd447",
-  danger: "#ff4d67",
+  surface: "#050915",   // main background
+  border: "#0f1b2f",    // border color
+  label: "#8fb1d4",     // text labels
+  mint: "#2fffe1",      // low UV (safe)
+  yellow: "#ffd447",    // moderate UV
+  danger: "#ff4d67",    // high/extreme UV
 }
 
 function UVReading() {
-  const [apiUv, setApiUv] = useState(null)
-  const [pointerX, setPointerX] = useState(0)
-  const [pointerY, setPointerY] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [gaugeSize, setGaugeSize] = useState(75) // percentage size
+  const [apiUv, setApiUv] = useState(null)       // UV index from API
+  const [pointerX, setPointerX] = useState(0)    // gauge needle X position
+  const [pointerY, setPointerY] = useState(0)    // gauge needle Y position
+  const [loading, setLoading] = useState(true)   // loading state for API call
+  const [gaugeSize, setGaugeSize] = useState(75) // gauge display size percentage
   
+  // dev override context - allows manual override of UV value for testing
   const { overrides, toggleOverride, setValue } = useDevOverride()
   const override = overrides.uv
-  const uv = override.enabled ? override.value : apiUv
+  const uv = override.enabled ? override.value : apiUv  // use override if enabled
 
+  // fetch UV data on component mount
   useEffect(() => {
     requestUV()
   }, [])
 
+  // recalculate needle position when UV value changes
   useEffect(() => {
     calculatePosition()
   }, [uv])
 
+  // calculate gauge needle position based on UV value
+  // converts UV to angle, then to X/Y coordinates on the semicircle
   const calculatePosition = () => {
-    const clampedUv = Math.max(0, Math.min(uv ?? 0, MAX_UV))
-    const angleDegrees = 180 - (clampedUv / MAX_UV) * 180
-    const angleRadians = (angleDegrees * Math.PI) / 180
+    const clampedUv = Math.max(0, Math.min(uv ?? 0, MAX_UV))  // clamp to valid range
+    const angleDegrees = 180 - (clampedUv / MAX_UV) * 180     // map UV to 180-0 degrees
+    const angleRadians = (angleDegrees * Math.PI) / 180       // convert to radians
 
+    // calculate X/Y on the gauge arc
     const x = GAUGE_CENTER_X + GAUGE_RADIUS * Math.cos(angleRadians)
     const y = GAUGE_CENTER_Y - GAUGE_RADIUS * Math.sin(angleRadians)
 
@@ -48,6 +58,7 @@ function UVReading() {
     setPointerY(y)
   }
 
+  // fetch current UV index from backend API
   const requestUV = async () => {
     setLoading(true)
     const url = new URL("/api/uv", SERVER_ADDRESS)
@@ -67,13 +78,15 @@ function UVReading() {
       throw err
     }
 
+    // handle both raw number and {uv: x} response formats
     const uvValue = typeof data === "number" ? data : data?.uv
     const parsedUv = uvValue == null ? null : Number(uvValue)
     setApiUv(Number.isFinite(parsedUv) ? parsedUv : null)
     setLoading(false)
   }
 
-  // Status messages depending on the uv index value
+  // determine status label, color, and message based on UV index value
+  // returns object with label, color, and safety message
   const uvStatus = (() => {
     if (uv == null) {
       return { label: "Syncing", color: COLORS.label, message: "Fetching UV data..." }
@@ -103,6 +116,7 @@ function UVReading() {
   })()
 
   return (
+    // main container with themed background
     <div
       className="h-full rounded-2xl border px-5 py-4 sm:px-6 sm:py-5"
       style={{ backgroundColor: COLORS.surface, borderColor: COLORS.border }}
@@ -131,11 +145,12 @@ function UVReading() {
         </span>
       </div>
 
-      {/* Primary: Large prominent gauge */}
+      {/* Primary: Large prominent semicircle gauge */}
       <div
         className="rounded-2xl border bg-[#0b1529] mb-4 flex justify-center"
         style={{ borderColor: COLORS.border }}
       >
+        {/* SVG semicircle gauge with colored segments */}
         <svg 
           viewBox="5 8 150 82" 
           fill="none" 
@@ -143,6 +158,7 @@ function UVReading() {
           style={{ width: `${gaugeSize}%`, maxWidth: '100%' }}
         >
           <g>
+            {/* Gauge segments - each arc represents a UV range */}
             {/* Low: 0-2 - Mint */}
             <path d="M 80,85 L 10,85 A 75,75 0 0,1 22,45 Z" fill={COLORS.mint} />
             {/* Moderate: 3-5 - Yellow */}
@@ -154,7 +170,7 @@ function UVReading() {
             {/* Extreme: 11-13 - Purple */}
             <path d="M 80,85 L 138,45 A 75,75 0 0,1 150,85 Z" fill="#8B00FF" />
             
-            {/* Pointer needle */}
+            {/* Pointer needle - rotates based on UV value */}
             <line
               x1="80"
               y1="85"
@@ -164,18 +180,18 @@ function UVReading() {
               strokeWidth="4"
               strokeLinecap="round"
             />
-            {/* Center dot */}
+            {/* Center pivot dot */}
             <circle cx="80" cy="85" r="8" fill="#1a1a1a" stroke="#000000" strokeWidth="2" />
           </g>
         </svg>
       </div>
 
-      {/* Secondary: Message banner */}
+      {/* Secondary: Safety message banner with colored accent */}
       <div
         className="rounded-xl px-4 py-3"
         style={{
-          backgroundColor: `${uvStatus.color}15`,
-          borderLeft: `4px solid ${uvStatus.color}`,
+          backgroundColor: `${uvStatus.color}15`,        // translucent background
+          borderLeft: `4px solid ${uvStatus.color}`,     // colored left border
         }}
       >
         <p
