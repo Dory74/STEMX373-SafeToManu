@@ -16,6 +16,7 @@ function CountdownTimer() {
   const [fillProgress, setFillProgress] = useState(0);
   const [keepLooping, setKeepLooping] = useState(true);
   const [latestScore, setLatestScore] = useState(null);
+  const [latestUsername, setLatestUsername] = useState(null);
   const [leaderboardPosition, setLeaderboardPosition] = useState(null);
   const keepLoopingRef = useRef(keepLooping);
 
@@ -86,21 +87,28 @@ function CountdownTimer() {
 
     const SERVER_ADDRESS = import.meta.env.VITE_API_URL;
     
-    // Fetch leaderboard to get latest score and position
-    fetch(new URL('/api/leaderboard', SERVER_ADDRESS))
+    // Fetch latest jump score from the API
+    fetch(new URL('/api/latestJump', SERVER_ADDRESS))
       .then((res) => res.json())
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          const sorted = data
-            .filter((item) => typeof item.score === 'number')
-            .sort((a, b) => b.score - a.score);
+        if (data && typeof data.score === 'number') {
+          setLatestScore(data.score);
+          setLatestUsername(data.username || 'Anonymous');
           
-          // Get the most recent entry (assuming it's the last one added, or first in sorted)
-          // For demo, we'll show the top score as "latest"
-          if (sorted.length > 0) {
-            setLatestScore(sorted[0].score);
-            setLeaderboardPosition(1);
-          }
+          // Fetch leaderboard to determine position
+          return fetch(new URL('/api/leaderboard', SERVER_ADDRESS))
+            .then((res) => res.json())
+            .then((leaderboard) => {
+              if (Array.isArray(leaderboard)) {
+                const sorted = leaderboard
+                  .filter((item) => typeof item.score === 'number')
+                  .sort((a, b) => b.score - a.score);
+                
+                // Find position based on latest score
+                const position = sorted.findIndex((item) => item.score <= data.score);
+                setLeaderboardPosition(position > 0 ? position : sorted.length + 1);
+              }
+            });
         }
       })
       .catch((err) => {
@@ -158,6 +166,22 @@ function CountdownTimer() {
     if (phase === 'result') {
       return (
         <div className="flex flex-col items-center justify-center gap-6 text-center px-4">
+          {/* Username Display */}
+          <div>
+            <p 
+              className="text-[11px] font-semibold tracking-[0.3em] uppercase mb-2"
+              style={{ color: COLORS.label }}
+            >
+              Jumper
+            </p>
+            <div 
+              className="text-2xl font-bold"
+              style={{ color: 'white' }}
+            >
+              {latestUsername || '...'}
+            </div>
+          </div>
+
           {/* Score Display */}
           <div>
             <p 

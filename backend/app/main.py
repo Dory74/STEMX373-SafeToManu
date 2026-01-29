@@ -139,25 +139,30 @@ def get_current_wind_speed():
     return {"speed": speed}
 
 
+# Manu Splash API endpoints
+@app.get("/api/leaderboard")
+def get_leaderboard():
+    """Returns current top 3 manu scores 
 
-# Depreciated, use only for testing when splash cam is offline
+    Returns:
+        JSONResponse: Leaderboard data, see manuSplashApi.get_leaderboard() for format
+    """
+    return splash.get_leaderboard()
 
+@app.get("/api/latestJump")
+def get_latest_jump():
+    """Returns the latest jump score and username. 
 
-# # Manu Splash API endpoints
-# @app.get("/api/leaderboard")
-# def get_leaderboard():
-#     """Returns current top 3 manu scores 
+    Returns:
+        dict: {"username": str, "score": float} Latest jump data
+    """
+    return splash.get_latest_jump()
 
-#     Returns:
-#         JSONResponse: Leaderboard data, see manuSplashApi.get_leaderboard() for format
-#     """
-#     return splash.get_leaderboard()
+@app.get("/api/totalJumps")
+def get_total_jumps():
+    """Returns the total number of jumps recorded.
 
-# @app.get("/api/latestVideo")
-# def get_latest_video():
-#     """Returns the latest video recorded via the splash camera 
-
-#     Returns:
-#         FileResponse: Video file, .mp4 format
-#     """
-#     return splash.get_latest_video()
+    Returns:
+        int: Total jumps
+    """
+    return splash.get_total_jumps()

@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 LEADERBOARD_FILE = os.path.join(os.path.dirname(__file__), "leaderboard.json")
+STATS_FILE = os.path.join(os.path.dirname(__file__), "stats.json")
 
 logger.info(f"Splash Scoring API initialized")
 logger.info(f"Leaderboard file: {os.path.abspath(LEADERBOARD_FILE)}")
@@ -27,10 +28,6 @@ def root():
     logger.info("Health check endpoint called")
     return {"message": "Backend is running"}
 
-def _safe_join(directory: str, filename: str) -> str:
-    """Prevent path traversal by normalizing requested filenames."""
-    cleaned = os.path.basename(filename)
-    return os.path.join(directory, cleaned)
 
 
 @app.get("/splash/leaderboard")
@@ -48,6 +45,18 @@ def get_leaderboard() -> List[dict]:
 
 
     return JSONResponse(content=lb)
+
+
+@app.get("/splash/stats")
+def get_stats() -> dict:
+    """Load and return the stats data from the JSON file."""
+    if not os.path.exists(STATS_FILE):
+        raise HTTPException(status_code=404, detail="Stats file not found")
+
+    with open(STATS_FILE, "r") as f:
+        stats = json.load(f)
+
+    return JSONResponse(content=stats)
 
 
 @app.post("/splash/run")
