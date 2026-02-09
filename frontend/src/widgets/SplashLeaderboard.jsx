@@ -1,30 +1,36 @@
 import { useState, useEffect } from "react"
+// !!!!!!!!!! Depreciated Hasn't been updated to match changes in backend, use at your own risk. !!!!!!!!! //
 
 const SERVER_ADDRESS = import.meta.env.VITE_API_URL
+
+// theme colors for the leaderboard widget
 const COLORS = {
-  surface: "#050915",
-  border: "#0f1b2f",
-  mint: "#2fffe1",
-  yellow: "#ffd447",
-  label: "#8fb1d4",
-  rowBg: "#0b1529",
+  surface: "#050915",   // main background
+  border: "#0f1b2f",    // border color
+  mint: "#2fffe1",      // accent for 2nd place / buttons
+  yellow: "#ffd447",    // accent for 1st place
+  label: "#8fb1d4",     // text labels
+  rowBg: "#0b1529",     // row background
 }
 
 function Leaderboard() {
-  const [entries, setEntries] = useState([])
-  const [status, setStatus] = useState("idle")
-  const [error, setError] = useState("")
-    const [data, setData] = useState([])
+  const [entries, setEntries] = useState([])    // raw leaderboard data from API
+  const [status, setStatus] = useState("idle")  // idle | loading | loaded | error
+  const [error, setError] = useState("")        // error message to display
+  const [data, setData] = useState([])          // formatted top 3 entries for display
 
+  // fetch leaderboard on component mount
   useEffect(() => {
         fetchLeaderboard(); 
     }, []);
 
+    // format top 3 entries when data is loaded
     useEffect(() => {
         if (status !== "loaded" || entries.length === 0) {
             setData([]);
             return;
         }
+        // map top 3 entries with display properties (rank, color, badge)
         const data = [
             { rank: 1, name: "Bob", score: entries[0].score, color: COLORS.yellow, height: "h-64", badge: "🏆" },
             { rank: 2, name: "Alice", score: entries[1].score, color: COLORS.mint, height: "h-48", badge: "🥈" },
@@ -35,6 +41,7 @@ function Leaderboard() {
 
 
 
+  // fetch leaderboard data from backend API
   const fetchLeaderboard = async () => {
     setStatus("loading")
     setError("")
@@ -45,6 +52,7 @@ function Leaderboard() {
         throw new Error(`Request failed with status ${response.status}`)
       }
       const data = await response.json()
+      // filter valid entries and sort by score descending
       const normalized = Array.isArray(data)
         ? data
             .filter((item) => typeof item.score === "number")
@@ -60,9 +68,10 @@ function Leaderboard() {
 
 
 
-    const hasData = entries.length > 0
+    const hasData = entries.length > 0  // check if we have any entries to display
 
   return (
+    // main container with themed background
     <div
       className="h-full rounded-2xl border px-5 py-4 sm:px-6 sm:py-5"
       style={{ backgroundColor: COLORS.surface, borderColor: COLORS.border }}
@@ -114,15 +123,16 @@ function Leaderboard() {
         <div className="text-red-400 text-sm mb-3">{error}</div>
       )}
 
-      {/* Leaderboard list */}
+      {/* Leaderboard list - renders top 3 entries */}
       {hasData ? (
         <div className="space-y-2">
           {data.map((entry, idx) => {
+            // extract display values from entry
             const rank = entry.rank
             const displayName = entry?.user || entry?.name || `Rider ${rank}`
             const score = entry?.score ?? "--"
-            const color = entry.color
-            const badge = entry.badge
+            const color = entry.color     // rank-specific accent color
+            const badge = entry.badge     // rank emoji (trophy, medal)
 
             return (
               <div
@@ -165,18 +175,6 @@ function Leaderboard() {
         </p>
       )}
 
-      {/* Progress bar decoration */}
-      {/* {hasData && (
-        <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-[#0d1a2f]">
-          <div
-            className="h-full"
-            style={{
-              width: `${Math.min((data[0]?.score / 100) * 100, 100)}%`,
-              backgroundColor: COLORS.yellow,
-            }}
-          />
-        </div>
-      )} */}
     </div>
   )
 }

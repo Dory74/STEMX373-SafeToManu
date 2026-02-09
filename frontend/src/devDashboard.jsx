@@ -3,11 +3,11 @@ import TideHeight from './dev_widgets/TideHeight'
 import WaterTemp from './dev_widgets/WaterTemp'
 import WaterQuality from './dev_widgets/WaterQuality'
 import Wind from './dev_widgets/Wind'
-import Leaderboard from './dev_widgets/Leaderboard'
-import InstantReplay from './dev_widgets/InstantReplay'
+import Leaderboard from './widgets/SplashLeaderboard'
+import InstantReplay from './widgets/InstantReplay'
 
 
-
+// !!!!!!!!! Hasn't been updated to match changes in backend, use at your own risk. This includes all the dev widgets !!!!!!!!! //
 function App() {
   return (
     <div className="min-h-screen w-full bg-gray-900 text-gray-100">
@@ -25,8 +25,8 @@ function App() {
           <WaterTemp />
           <WaterQuality />
           <Wind />
-          <Leaderboard />
-          <InstantReplay />
+          <Leaderboard/>
+          <InstantReplay/>
         </div>
       </div>
     </div>

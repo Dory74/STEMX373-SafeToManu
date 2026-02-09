@@ -3,27 +3,33 @@ import { useDevOverride } from "../context/DevOverrideContext"
 import DevSlider from "../components/DevSlider"
 
 const SERVER_ADDRESS = import.meta.env.VITE_API_URL
+
+// theme colors for the widget
 const COLORS = {
-  surface: "#050915",
-  border: "#0f1b2f",
-  mint: "#2fffe1",
-  yellow: "#ffd447",
-  label: "#8fb1d4",
+  surface: "#050915",   // main background
+  border: "#0f1b2f",    // border color
+  mint: "#2fffe1",      // safe state color
+  yellow: "#ffd447",    // warning state color
+  label: "#8fb1d4",     // text labels
 }
-const SAFE_THRESHOLD = 4.2
-const MAX_TIDE = 6.5
+
+const SAFE_THRESHOLD = 4.2  // minimum safe tide height in meters
+const MAX_TIDE = 6.5        // max tide for gauge scaling
 
 function TideHeight() {
-  const [apiTideHeight, setApiTideHeight] = useState(null)
+  const [apiTideHeight, setApiTideHeight] = useState(null)  // tide height from API
   
+  // dev override context - allows manual override of tide value for testing
   const { overrides, toggleOverride, setValue } = useDevOverride()
   const override = overrides.tideHeight
-  const tideHeight = override.enabled ? override.value : apiTideHeight
+  const tideHeight = override.enabled ? override.value : apiTideHeight  // use override if enabled
 
+  // fetch tide height on component mount
   useEffect(() => {
     requestTideHeight()
   }, [])
 
+  // fetch current tide height from backend API
   const requestTideHeight = async () => {
     const url = new URL("/api/tideHeight", SERVER_ADDRESS)
 
@@ -43,22 +49,24 @@ function TideHeight() {
       throw err
     }
 
-    setApiTideHeight(data.height ?? data)
+    setApiTideHeight(data.height ?? data)  // handle both {height: x} and raw number
   }
 
+  // derived values for gauge display
   const hasValue = tideHeight !== undefined && tideHeight !== null
   const numericHeight = hasValue ? Number(tideHeight) : null
-  const clampedHeight =
+  const clampedHeight =                                          // clamp to valid range
     numericHeight === null || Number.isNaN(numericHeight)
       ? null
       : Math.min(Math.max(numericHeight, 0), MAX_TIDE)
-  const fillPercent =
+  const fillPercent =                                            // gauge fill percentage
     clampedHeight === null ? 0 : (clampedHeight / MAX_TIDE) * 100
-  const safeLinePercent = Math.min((SAFE_THRESHOLD / MAX_TIDE) * 100, 100)
+  const safeLinePercent = Math.min((SAFE_THRESHOLD / MAX_TIDE) * 100, 100)  // safe line position
   const isAboveSafe = numericHeight !== null && numericHeight >= SAFE_THRESHOLD
-  const fillColor = isAboveSafe ? COLORS.mint : COLORS.yellow
+  const fillColor = isAboveSafe ? COLORS.mint : COLORS.yellow    // green if safe, yellow if not
 
   return (
+    // main container with themed background
     <div
       className="h-full rounded-2xl border px-5 py-4 sm:px-7 sm:py-6"
       style={{ backgroundColor: COLORS.surface, borderColor: COLORS.border }}
@@ -83,16 +91,16 @@ function TideHeight() {
         </span>
       </div>
 
-      {/* Main body */}
+      {/* Main body - gauge and value display */}
       <div className="flex flex-col sm:flex-row sm:items-end gap-5 sm:gap-8">
         <div className="flex items-end gap-4">
-          {/* Gauge */}
+          {/* Vertical gauge container */}
           <div
             className="relative w-14 sm:w-16 h-52 sm:h-64 rounded-xl border overflow-hidden"
             style={{ borderColor: COLORS.border, backgroundColor: "#0b1529" }}
           >
 
-            {/* filled in div */}
+            {/* filled portion - height based on current tide */}
             <div
               className="absolute bottom-0 left-0 w-full"
               style={{
@@ -101,10 +109,11 @@ function TideHeight() {
               }}
             />
 
+            {/* safe threshold line marker */}
             <div
               className="absolute left-0 w-full border-t-4"
               style={{
-                top: `${100 - safeLinePercent}%`,
+                top: `${100 - safeLinePercent}%`,  // position from top
                 borderColor: COLORS.border,
               }}
             >
@@ -122,14 +131,15 @@ function TideHeight() {
             </div>
           </div>
 
+          {/* Value display section */}
           <div className="flex flex-col gap-2">
             <div className="flex items-baseline gap-3">
-              {/* Large height vaalue */}
+              {/* Large tide height value */}
               <span className="text-5xl sm:text-6xl font-semibold leading-none text-white">
                 {hasValue ? tideHeight : "--"}
               </span>
 
-              {/* small m */}
+              {/* Unit label */}
               <span
                 className="text-lg sm:text-xl font-semibold leading-none"
                 style={{ color: COLORS.label }}
@@ -137,7 +147,7 @@ function TideHeight() {
                 m
               </span>
             </div>
-            {/* Warning message */}
+            {/* Safety status message */}
             <p
               className="text-sm sm:text-base font-semibold uppercase tracking-[0.15em]"
               style={{ color: isAboveSafe ? COLORS.mint : COLORS.yellow }}
@@ -145,7 +155,7 @@ function TideHeight() {
               {isAboveSafe ? "Safe depth for manu" : "Below safe crest"}
             </p>
 
-            {/* context text */}
+            {/* Helper text */}
             <p className="text-sm sm:text-base" style={{ color: COLORS.label }}>
               Vertical gauge shows live fill vs. safe line.
             </p>

@@ -9,6 +9,7 @@ METSERVICE_API_KEY = os.getenv("METSERVICE_API_KEY")
 LAT = os.getenv("VITE_LAT")
 LON = os.getenv("VITE_LON")
 
+# Fail fast if the API key is missing so we don't send anonymous requests.
 if METSERVICE_API_KEY is None:
     raise ValueError("METSERVICE_API_KEY not found in environment variables")
 

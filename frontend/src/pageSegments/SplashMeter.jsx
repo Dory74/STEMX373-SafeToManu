@@ -1,7 +1,7 @@
 import React from 'react';
 import InstantReplay from '../widgets/InstantReplay';
 import SplashLeaderboard from '../widgets/SplashLeaderboard';
-
+// !!!!!!!!!!!!!!!!!! Depreciated with the change to a two panel design, use this and corrosponding widgets at your own risk !!!!!!!!!!!!!!!!! //
 const COLORS = {
   midnight: "#02060f",
   border: "#0f1b2f",
