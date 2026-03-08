@@ -7,6 +7,7 @@ from . import uvApi
 from . import regionalCouncilApi as regional
 from . import manuSplashApi as splash
 from . import metServiceApi as met
+from . import warningLevel
 
 app = FastAPI()
 latest_video_name = ''
@@ -96,7 +97,8 @@ def get_enterococci():
 
 @app.get("/api/warning-level")
 def get_warning_level():
-    """Return the overall warning level based on water quality and other metrics.
+    """Return the overall warning level based on water quality, tide height, 
+    water temperature and other metrics.
     
     Warning Levels:
         1 = Good - Safe to swim
@@ -104,27 +106,9 @@ def get_warning_level():
         3 = Bad - Swimming not advised
     
     Returns:
-        dict: {"level": int, "message": str}
+        dict: {"level": int, "message": str, "tide_height": float, "water_temp": float}
     """
-    # Get water quality as the primary metric
-    water_quality = regional.get_enterococci()
-    
-    # Calculate warning level based on water quality thresholds
-    # Can incorporate other metrics here in the future (UV, wind, etc.)
-    if water_quality is None:
-        level = 1
-        message = "Waves clean • Sun shining • Conditions green"
-    elif water_quality <= 140:
-        level = 1
-        message = "Waves clean • Sun shining • Conditions green"
-    elif water_quality <= 280:
-        level = 2
-        message = "Elevated levels detected • Use caution • Check signage"
-    else:
-        level = 3
-        message = "High contaminants detected • Swimming not advised"
-    
-    return {"level": level, "message": message}
+    return warningLevel.calculate_warning_level()
 
 
 # MetService API endpoints

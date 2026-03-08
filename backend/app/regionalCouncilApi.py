@@ -39,7 +39,7 @@ def __generate_url(url):
 def get_tide_height():
     """Get the latest tide height from the regional council SOS service."""
     url = __generate_url(TIDE_HEIGHT_PATH)
-    return __request_from_url(url)+3.5  # Adjust to chart datum
+    return __request_from_url(url)+3.5  # Completly arbitray number to make the front end look good. I always had the assumption that when teh wharf was built they took into consideration the lowest tide height and built the wharf at a height that would be safe to use even at the lowest tides. So I added 3.5m to the tide height to reflect this assumption. This is not based on any real data or calculations, just an educated guess to make the front end look better. 
 
 
 def get_water_temprature():
